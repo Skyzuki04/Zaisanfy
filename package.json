@@ -1,0 +1,12 @@
+{
+  "name": "zaisanfy",
+  "private": true,
+  "description": "Zaisanfy: plataforma PropTech (monorepo con las 3 apps del SRS)",
+  "workspaces": ["apps/*", "packages/*"],
+  "scripts": {
+    "dev:visitor": "npm run dev -w apps/visitor",
+    "dev:partner": "npm run dev -w apps/partner",
+    "build": "npm run build --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present"
+  }
+}
