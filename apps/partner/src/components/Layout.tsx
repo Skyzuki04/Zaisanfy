@@ -17,6 +17,7 @@ export default function Layout() {
         <strong>Zaisanfy · Consola</strong>
         <nav>
           {(role === "vendedor" || role === "admin") && <NavLink to="/propiedades">Mis propiedades</NavLink>}
+          {role === "creativo" && <NavLink to="/perfil">Mi perfil</NavLink>}
         </nav>
         <span className="who">
           {profile.full_name ?? session.user.email} · {role}
@@ -50,6 +51,7 @@ export function RequireRole({ roles, children }: { roles: UserRole[]; children: 
 export function HomeRedirect() {
   const { profile } = useAuth();
   if (profile?.role === "vendedor" || profile?.role === "admin") return <Navigate to="/propiedades" replace />;
+  if (profile?.role === "creativo") return <Navigate to="/perfil" replace />;
   return (
     <div className="card">
       <h2>Bienvenido</h2>
