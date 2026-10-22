@@ -1,12 +1,33 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPublishedProperty, orderedPhotos } from "@/lib/properties";
 import { formatPrice, TYPE_LABEL } from "@/lib/format";
 import Visor360 from "@/components/Visor360";
 import Gallery from "@/components/Gallery";
+import { jsonLdString, propertyDescription, propertyJsonLd, propertyTitle, propertyUrl } from "@/lib/seo";
 
-// ZAI-23 · Detalle de la propiedad con su recorrido 360.
-export default async function PropertyPage({ params }: { params: Promise<{ id: string }> }) {
+type Props = { params: Promise<{ id: string }> };
+
+// ZAI-25 · Meta tags (título, descripción, canonical y Open Graph para compartir)
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { id } = await params;
+  const property = await getPublishedProperty(id);
+  if (!property) return { title: "Propiedad no disponible · Zaisanfy", robots: { index: false } };
+  const title = propertyTitle(property);
+  const description = propertyDescription(property);
+  const images = orderedPhotos(property).slice(0, 1);
+  return {
+    title: `${title} · Zaisanfy`,
+    description,
+    alternates: { canonical: propertyUrl(property.id) },
+    openGraph: { title, description, url: propertyUrl(property.id), type: "website", locale: "es_MX", siteName: "Zaisanfy", images },
+    twitter: { card: images.length ? "summary_large_image" : "summary", title, description, images },
+  };
+}
+
+// ZAI-23 · Detalle de la propiedad con su recorrido 360. ZAI-25 · JSON-LD RealEstateListing en el HTML del servidor.
+export default async function PropertyPage({ params }: Props) {
   const { id } = await params;
   const property = await getPublishedProperty(id);
   if (!property) notFound();
@@ -15,6 +36,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
 
   return (
     <main className="page detail">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdString(propertyJsonLd(property)) }} />
       <p>
         <Link href="/">← Volver a las propiedades</Link>
       </p>
