@@ -22,7 +22,9 @@ export default async function Home() {
       <ul className="cards">
         {properties.map((p) => (
           <li key={p.id} className="card">
-            <h2>{p.data.title}</h2>
+            <h2>
+              <Link href={`/propiedad/${p.id}`}>{p.data.title}</Link>
+            </h2>
             <p className="muted">
               {TYPE_LABEL[p.data.propertyType]} en {p.data.operation} · {p.data.location.city}, {p.data.location.state}
             </p>
