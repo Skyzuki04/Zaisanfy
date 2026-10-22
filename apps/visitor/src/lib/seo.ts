@@ -1,4 +1,5 @@
-import type { Property } from "@zaisanfy/schemas";
+import type { CreativePost, Property } from "@zaisanfy/schemas";
+import type { PostWithCreative } from "./posts";
 import { SITE_URL } from "./site";
 import { TYPE_LABEL } from "./format";
 import { orderedPhotos } from "./properties";
@@ -102,4 +103,51 @@ export function propertyJsonLd(p: Property) {
 /** JSON seguro para <script type="application/ld+json"> (evita cerrar la etiqueta con "</script>"). */
 export function jsonLdString(data: unknown) {
   return JSON.stringify(data).replace(/</g, "\\u003c");
+}
+
+/**
+ * ZAI-28 · RNF-SEO-01 · Datos estructurados de un render, plano o idea (VisualArtwork).
+ */
+const ARTFORM: Record<CreativePost["category"], string> = {
+  render: "Render 3D",
+  plano: "Plano arquitectónico",
+  idea: "Idea de diseño",
+};
+
+export function postUrl(id: string) {
+  return `${SITE_URL}/publicaciones/${id}`;
+}
+
+export function postDescription(p: PostWithCreative) {
+  if (p.description) return p.description.slice(0, 160);
+  const where = [p.property_type ? `para ${TYPE_LABEL[p.property_type].toLowerCase()}` : null, p.city ? `en ${p.city}` : null];
+  return [`${ARTFORM[p.category]} de ${p.creative.display_name}`, ...where].filter(Boolean).join(" ") + ".";
+}
+
+export function postJsonLd(p: PostWithCreative) {
+  const url = postUrl(p.id);
+  const creatorUrl = `${SITE_URL}/creativos/${p.creative.id}`;
+  return [
+    {
+      "@context": "https://schema.org",
+      "@type": "VisualArtwork",
+      name: p.title,
+      description: postDescription(p),
+      url,
+      image: p.images.map((u) => cld(u, 1200)),
+      artform: ARTFORM[p.category],
+      creator: { "@type": "Person", name: p.creative.display_name, url: creatorUrl },
+      dateCreated: p.created_at,
+      dateModified: p.updated_at,
+      ...(p.city ? { locationCreated: { "@type": "Place", name: p.city } } : {}),
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: p.creative.display_name, item: creatorUrl },
+        { "@type": "ListItem", position: 2, name: p.title, item: url },
+      ],
+    },
+  ];
 }

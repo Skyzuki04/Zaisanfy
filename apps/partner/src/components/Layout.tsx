@@ -18,6 +18,7 @@ export default function Layout() {
         <nav>
           {(role === "vendedor" || role === "admin") && <NavLink to="/propiedades">Mis propiedades</NavLink>}
           {role === "creativo" && <NavLink to="/perfil">Mi perfil</NavLink>}
+          {role === "creativo" && <NavLink to="/portafolio">Mi portafolio</NavLink>}
         </nav>
         <span className="who">
           {profile.full_name ?? session.user.email} · {role}

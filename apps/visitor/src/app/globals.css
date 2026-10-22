@@ -61,3 +61,11 @@ button.primary, .button.primary { background: var(--brand); color: #fff; border-
 .creative-header h1 { margin: 0 0 4px; }
 .creative-avatar { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; }
 .creative-avatar.empty { display: grid; place-items: center; background: #dfe6f3; color: var(--brand); font-size: 2.5rem; font-weight: 700; }
+
+/* ZAI-28 · Portafolio */
+.post-card { padding: 0; overflow: hidden; }
+.post-card h3 { font-size: 1rem; margin: 10px 14px 4px; }
+.post-card p { margin: 0 14px 12px; }
+.post-card .cover { position: relative; display: block; }
+.post-card .cover img { width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; display: block; background: #eceff3; }
+.tag-category { position: absolute; top: 8px; left: 8px; background: rgba(255, 255, 255, 0.92); color: var(--brand); font-size: 0.75rem; font-weight: 600; padding: 2px 8px; border-radius: 999px; }
