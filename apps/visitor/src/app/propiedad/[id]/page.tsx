@@ -6,6 +6,7 @@ import { formatPrice, TYPE_LABEL } from "@/lib/format";
 import Visor360 from "@/components/Visor360";
 import Gallery from "@/components/Gallery";
 import PostCard from "@/components/PostCard";
+import BookmarkButton from "@/components/BookmarkButton";
 import { getSuggestedPosts } from "@/lib/suggestions";
 import { cld } from "@/lib/cloudinary";
 import { jsonLdString, propertyDescription, propertyJsonLd, propertyTitle, propertyUrl } from "@/lib/seo";
@@ -53,7 +54,10 @@ export default async function PropertyPage({ params }: Props) {
       <p>
         <Link href="/">← Volver a las propiedades</Link>
       </p>
-      <h1>{d.title}</h1>
+      <div className="title-row">
+        <h1>{d.title}</h1>
+        <BookmarkButton propertyId={property.id} title={d.title} />
+      </div>
       <p className="muted">
         {TYPE_LABEL[d.propertyType]} en {d.operation} · {[d.location.neighborhood, d.location.city, d.location.state].filter(Boolean).join(", ")}
       </p>
