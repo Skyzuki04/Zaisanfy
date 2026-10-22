@@ -1,37 +1,39 @@
 import Link from "next/link";
-import type { Property } from "@zaisanfy/schemas";
-import { supabase } from "@/lib/supabase";
-import { formatPrice, TYPE_LABEL } from "@/lib/format";
+import PropertyCard from "@/components/PropertyCard";
+import SearchForm from "@/components/SearchForm";
+import { hasFilters, parseFilters, searchProperties } from "@/lib/search";
 
-// Escaparate público (App 1). ZAI-21: solo se muestran las propiedades publicadas.
-// El buscador con filtros llega en ZAI-24.
-export const dynamic = "force-dynamic";
-
-export default async function Home() {
-  const { data } = await supabase
-    .from("properties")
-    .select("*")
-    .eq("status", "published")
-    .order("created_at", { ascending: false });
-  const properties = (data as Property[]) ?? [];
+// Escaparate público (App 1) · ZAI-24: buscador con filtros.
+// Solo aparecen propiedades publicadas (filtro explícito + RLS de ZAI-20).
+export default async function Home({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  const filters = parseFilters(await searchParams);
+  const properties = await searchProperties(filters);
+  const filtered = hasFilters(filters);
 
   return (
     <main className="page">
-      <h1>Propiedades</h1>
-      {properties.length === 0 && <p>Todavía no hay propiedades publicadas.</p>}
-      <ul className="cards">
-        {properties.map((p) => (
-          <li key={p.id} className="card">
-            <h2>
-              <Link href={`/propiedad/${p.id}`}>{p.data.title}</Link>
-            </h2>
-            <p className="muted">
-              {TYPE_LABEL[p.data.propertyType]} en {p.data.operation} · {p.data.location.city}, {p.data.location.state}
-            </p>
-            <p className="price">{formatPrice(p.data)}</p>
-          </li>
-        ))}
-      </ul>
+      <h1>Encuentra tu propiedad</h1>
+      <SearchForm filters={filters} />
+      <p className="muted" aria-live="polite">
+        {properties.length} {properties.length === 1 ? "propiedad" : "propiedades"}
+      </p>
+      {properties.length === 0 ? (
+        <div className="card empty">
+          <h2>Sin resultados</h2>
+          <p>{filtered ? "No hay propiedades con esos filtros. Prueba con menos filtros o con otra ubicación." : "Todavía no hay propiedades publicadas."}</p>
+          {filtered && (
+            <Link href="/" className="button">
+              Limpiar filtros
+            </Link>
+          )}
+        </div>
+      ) : (
+        <ul className="cards">
+          {properties.map((p) => (
+            <PropertyCard key={p.id} property={p} />
+          ))}
+        </ul>
+      )}
     </main>
   );
 }
