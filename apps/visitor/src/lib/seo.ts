@@ -2,6 +2,7 @@ import type { Property } from "@zaisanfy/schemas";
 import { SITE_URL } from "./site";
 import { TYPE_LABEL } from "./format";
 import { orderedPhotos } from "./properties";
+import { cld } from "./cloudinary";
 
 /**
  * ZAI-25 · RNF-SEO-01 · Datos estructurados (Schema.org) de una propiedad.
@@ -73,7 +74,7 @@ export function propertyJsonLd(p: Property) {
       name: d.title,
       description: propertyDescription(p),
       url,
-      image: orderedPhotos(p),
+      image: orderedPhotos(p).map((u) => cld(u, 1200)),
       datePosted: p.created_at,
       dateModified: p.updated_at,
       offers: {
