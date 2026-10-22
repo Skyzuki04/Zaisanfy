@@ -1,0 +1,23 @@
+/* Escaparate público · estilos base */
+:root {
+  --bg: #f6f7f9;
+  --card: #ffffff;
+  --text: #1d2433;
+  --muted: #6b7280;
+  --line: #e3e6eb;
+  --brand: #1f6feb;
+  --danger: #c62828;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: var(--text);
+  background: var(--bg);
+}
+* { box-sizing: border-box; }
+body { margin: 0; }
+a { color: var(--brand); }
+.page { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+.muted { color: var(--muted); }
+.error { color: var(--danger); }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
+.cards { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+.cards h2 { font-size: 1.05rem; margin: 0 0 6px; }
+.price { font-weight: 700; font-size: 1.1rem; }
