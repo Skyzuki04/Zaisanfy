@@ -78,3 +78,7 @@ button.primary, .button.primary { background: var(--brand); color: #fff; border-
 .chip { padding: 6px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); text-decoration: none; color: inherit; }
 .chip.active { background: var(--brand); border-color: var(--brand); color: #fff; }
 .pager { display: flex; justify-content: space-between; align-items: center; margin-top: 24px; }
+
+/* ZAI-30 · Inspiración en el detalle */
+.section-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.inspiration { margin-top: 32px; }

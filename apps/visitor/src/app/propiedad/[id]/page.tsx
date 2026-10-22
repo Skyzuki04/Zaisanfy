@@ -5,6 +5,8 @@ import { getPublishedProperty, orderedPhotos } from "@/lib/properties";
 import { formatPrice, TYPE_LABEL } from "@/lib/format";
 import Visor360 from "@/components/Visor360";
 import Gallery from "@/components/Gallery";
+import PostCard from "@/components/PostCard";
+import { getSuggestedPosts } from "@/lib/suggestions";
 import { cld } from "@/lib/cloudinary";
 import { jsonLdString, propertyDescription, propertyJsonLd, propertyTitle, propertyUrl } from "@/lib/seo";
 
@@ -43,6 +45,7 @@ export default async function PropertyPage({ params }: Props) {
   if (!property) notFound();
   const d = property.data;
   const photos = orderedPhotos(property);
+  const suggestions = await getSuggestedPosts(property);
 
   return (
     <main className="page detail">
@@ -74,6 +77,22 @@ export default async function PropertyPage({ params }: Props) {
         {d.areaM2 && <div><strong>{d.areaM2}</strong> m²</div>}
       </section>
       {d.description && <p className="description">{d.description}</p>}
+
+      {/* ZAI-30 · RF-VIS-03 · Renders de creativos para propiedades parecidas */}
+      {suggestions.length > 0 && (
+        <section className="inspiration" aria-labelledby="inspiracion">
+          <div className="section-head">
+            <h2 id="inspiracion">Inspiración</h2>
+            <Link href="/muro">Ver más en el muro →</Link>
+          </div>
+          <p className="muted">Renders, planos e ideas de creativos para propiedades como esta.</p>
+          <ul className="cards posts">
+            {suggestions.map((p) => (
+              <PostCard key={p.id} post={p} />
+            ))}
+          </ul>
+        </section>
+      )}
     </main>
   );
 }
