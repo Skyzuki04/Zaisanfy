@@ -4,9 +4,11 @@ import { PropertyDataSchema, type Property, type PropertyData } from "@zaisanfy/
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../auth/AuthProvider";
 import { STATUS_LABEL } from "../lib/properties";
+import MediaEditor from "../components/MediaEditor";
 
 /**
  * ZAI-21 · RF-VEN-01 · Alta y edición de una propiedad.
+ * ZAI-22 · RF-VEN-02 · Fotos y foto 360 (MediaEditor).
  * El formulario se valida con el mismo esquema Zod que usa todo el proyecto (packages/schemas).
  */
 type Errors = Record<string, string>;
@@ -37,6 +39,7 @@ export default function PropertyForm() {
   const [errors, setErrors] = useState<Errors>({});
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [media, setMedia] = useState<PropertyData["media"]>(EMPTY.media);
 
   useEffect(() => {
     if (isNew) return;
@@ -50,6 +53,7 @@ export default function PropertyForm() {
         if (!data) return setSaveError("No encontramos esta propiedad o no es tuya.");
         setProperty(data as Property);
         setInitial((data as Property).data);
+        setMedia((data as Property).data.media);
       });
   }, [id, isNew, session]);
 
@@ -75,7 +79,7 @@ export default function PropertyForm() {
         lat: num(f.get("lat")),
         lng: num(f.get("lng")),
       },
-      media: initial?.media ?? EMPTY.media,
+      media,
     };
     const parsed = PropertyDataSchema.safeParse(candidate);
     if (!parsed.success) {
@@ -194,6 +198,7 @@ export default function PropertyForm() {
           <input name="lng" type="number" step="any" defaultValue={initial.location.lng ?? ""} />
           {err("location.lng")}
         </label>
+        <MediaEditor value={media} onChange={setMedia} />
         {Object.keys(errors).length > 0 && <p className="error span2">Revisa los campos marcados.</p>}
         {saveError && <p className="error span2">{saveError}</p>}
         <div className="span2 row">
