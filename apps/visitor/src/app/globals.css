@@ -69,3 +69,12 @@ button.primary, .button.primary { background: var(--brand); color: #fff; border-
 .post-card .cover { position: relative; display: block; }
 .post-card .cover img { width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; display: block; background: #eceff3; }
 .tag-category { position: absolute; top: 8px; left: 8px; background: rgba(255, 255, 255, 0.92); color: var(--brand); font-size: 0.75rem; font-weight: 600; padding: 2px 8px; border-radius: 999px; }
+
+/* ZAI-29 · Menú, muro y paginación */
+.site-header { max-width: 1100px; margin: 0 auto; padding: 14px 16px 0; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.site-header .brand { font-weight: 800; font-size: 1.2rem; color: var(--brand); text-decoration: none; }
+.site-header nav { display: flex; gap: 16px; flex-wrap: wrap; }
+.chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.chip { padding: 6px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); text-decoration: none; color: inherit; }
+.chip.active { background: var(--brand); border-color: var(--brand); color: #fff; }
+.pager { display: flex; justify-content: space-between; align-items: center; margin-top: 24px; }
