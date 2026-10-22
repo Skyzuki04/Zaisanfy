@@ -5,9 +5,19 @@ import { getPublishedProperty, orderedPhotos } from "@/lib/properties";
 import { formatPrice, TYPE_LABEL } from "@/lib/format";
 import Visor360 from "@/components/Visor360";
 import Gallery from "@/components/Gallery";
+import { cld } from "@/lib/cloudinary";
 import { jsonLdString, propertyDescription, propertyJsonLd, propertyTitle, propertyUrl } from "@/lib/seo";
 
 type Props = { params: Promise<{ id: string }> };
+
+// ZAI-26 · ISR (stale-while-revalidate): la página se genera una vez y se sirve desde caché.
+// Se regenera sola cada hora, o al momento con /api/revalidate cuando cambia la propiedad (ISR on-demand).
+export const revalidate = 3600;
+export const dynamicParams = true;
+export function generateStaticParams() {
+  // No se genera nada en el build: cada propiedad se genera la primera vez que alguien la visita
+  return [];
+}
 
 // ZAI-25 · Meta tags (título, descripción, canonical y Open Graph para compartir)
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -16,7 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!property) return { title: "Propiedad no disponible · Zaisanfy", robots: { index: false } };
   const title = propertyTitle(property);
   const description = propertyDescription(property);
-  const images = orderedPhotos(property).slice(0, 1);
+  const images = orderedPhotos(property).slice(0, 1).map((u) => cld(u, 1200));
   return {
     title: `${title} · Zaisanfy`,
     description,
