@@ -49,7 +49,7 @@ button.primary, .button.primary { background: var(--brand); color: #fff; border-
 .property-card h2, .property-card p { padding: 0 14px; }
 .property-card h2 { margin-top: 12px; }
 .property-card .cover { position: relative; display: block; }
-.property-card .cover img, .property-card .no-photo { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block; background: #eceff3; }
+.property-card .cover img, .property-card .no-photo { width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; display: block; background: #eceff3; }
 .property-card .no-photo { display: grid; place-items: center; color: var(--muted); }
 .tag360 { position: absolute; top: 8px; left: 8px; background: rgba(0, 0, 0, 0.7); color: #fff; font-size: 0.75rem; padding: 2px 8px; border-radius: 999px; }
 .visor360-preview { position: relative; display: block; padding: 0; border: none; cursor: pointer; }
@@ -78,3 +78,27 @@ button.primary, .button.primary { background: var(--brand); color: #fff; border-
 .chip { padding: 6px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); text-decoration: none; color: inherit; }
 .chip.active { background: var(--brand); border-color: var(--brand); color: #fff; }
 .pager { display: flex; justify-content: space-between; align-items: center; margin-top: 24px; }
+
+/* ZAI-30 · Inspiración en el detalle */
+.section-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.inspiration { margin-top: 32px; }
+
+/* ZAI-31 · Mi Lista */
+.heart { display: inline-grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--line); background: #fff; cursor: pointer; padding: 0; }
+.heart svg { fill: none; stroke: #c0264b; stroke-width: 2; }
+.heart.saved svg { fill: #c0264b; }
+.heart:disabled { opacity: 0.6; cursor: default; }
+.heart:focus-visible { outline: 3px solid var(--brand); outline-offset: 2px; }
+.property-card { position: relative; }
+.heart.on-card { position: absolute; top: 8px; right: 8px; }
+.title-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.site-header nav { align-items: center; }
+.link { background: none; border: 0; padding: 0; color: var(--brand); text-decoration: underline; cursor: pointer; font: inherit; }
+.auth { max-width: 460px; }
+.tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+.tabs button { flex: 1; padding: 8px; border: 1px solid var(--line); background: var(--card); border-radius: 8px; cursor: pointer; font: inherit; }
+.tabs button.active { background: var(--brand); color: #fff; border-color: var(--brand); }
+.form { display: grid; gap: 12px; }
+.form label { display: grid; gap: 4px; }
+.form input { padding: 10px; border: 1px solid var(--line); border-radius: 8px; font: inherit; }
+.notice { color: #146c2e; }

@@ -10,8 +10,5 @@ export const getPublishedProperty = cache(async (id: string): Promise<Property |
   return (data as Property) ?? null;
 });
 
-/** Portada primero y después el resto de la galería, sin repetir. */
-export function orderedPhotos(p: Property): string[] {
-  const { coverUrl, gallery } = p.data.media;
-  return coverUrl ? [coverUrl, ...gallery.filter((u) => u !== coverUrl)] : gallery;
-}
+// Vive en photos.ts para poder usarla también en componentes del navegador (Mi Lista)
+export { orderedPhotos } from "./photos";

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import AccountLinks from "./AccountLinks";
 
 /** Menú del Escaparate. */
 export default function SiteHeader() {
@@ -10,6 +11,7 @@ export default function SiteHeader() {
       <nav>
         <Link href="/">Propiedades</Link>
         <Link href="/muro">Inspiración</Link>
+        <AccountLinks />
       </nav>
     </header>
   );
