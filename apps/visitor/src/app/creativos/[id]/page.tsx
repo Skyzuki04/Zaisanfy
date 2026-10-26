@@ -3,10 +3,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { SPECIALTY_LABEL } from "@zaisanfy/schemas";
 import { getCreativeProfile } from "@/lib/creatives";
+import { getCreativePosts } from "@/lib/posts";
+import PostCard from "@/components/PostCard";
 import { cld } from "@/lib/cloudinary";
 import { SITE_URL } from "@/lib/site";
 
-// ZAI-27 · RF-CRE-01 · Perfil público del creativo.
+// ZAI-27 · RF-CRE-01 · Perfil público del creativo. ZAI-28 · con su portafolio.
 // ISR: se regenera cada 10 minutos para que los cambios del creativo se vean pronto.
 export const revalidate = 600;
 export function generateStaticParams() {
@@ -33,6 +35,7 @@ export default async function CreativePage({ params }: Props) {
   const { id } = await params;
   const c = await getCreativeProfile(id);
   if (!c) notFound();
+  const posts = await getCreativePosts(c.id);
 
   return (
     <main className="page creative">
@@ -61,6 +64,20 @@ export default async function CreativePage({ params }: Props) {
         </div>
       </header>
       {c.bio && <p className="description">{c.bio}</p>}
+
+      {/* ZAI-28 · Portafolio */}
+      <section>
+        <h2>Portafolio</h2>
+        {posts.length === 0 ? (
+          <p className="muted">Este creativo todavía no ha publicado renders, planos ni ideas.</p>
+        ) : (
+          <ul className="cards posts">
+            {posts.map((p) => (
+              <PostCard key={p.id} post={p} showCreative={false} />
+            ))}
+          </ul>
+        )}
+      </section>
     </main>
   );
 }
