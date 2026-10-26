@@ -9,6 +9,9 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@photo-sphere-viewer/core": "^5.15.1",
+    "@supabase/supabase-js": "^2.49.0",
+    "@zaisanfy/schemas": "*",
     "next": "^15.3.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
