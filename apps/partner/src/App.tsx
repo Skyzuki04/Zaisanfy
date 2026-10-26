@@ -4,6 +4,9 @@ import Layout, { HomeRedirect, RequireRole } from "./components/Layout";
 import Login from "./pages/Login";
 import MisPropiedades from "./pages/MisPropiedades";
 import PropertyForm from "./pages/PropertyForm";
+import MiPerfil from "./pages/MiPerfil";
+import MiPortafolio from "./pages/MiPortafolio";
+import PostForm from "./pages/PostForm";
 
 // Consola de socios (App 2): vendedores y creativos.
 export default function App() {
@@ -35,6 +38,38 @@ export default function App() {
               element={
                 <RequireRole roles={["vendedor", "admin"]}>
                   <PropertyForm />
+                </RequireRole>
+              }
+            />
+            <Route
+              path="/perfil"
+              element={
+                <RequireRole roles={["creativo"]}>
+                  <MiPerfil />
+                </RequireRole>
+              }
+            />
+            <Route
+              path="/portafolio"
+              element={
+                <RequireRole roles={["creativo"]}>
+                  <MiPortafolio />
+                </RequireRole>
+              }
+            />
+            <Route
+              path="/portafolio/nueva"
+              element={
+                <RequireRole roles={["creativo"]}>
+                  <PostForm />
+                </RequireRole>
+              }
+            />
+            <Route
+              path="/portafolio/:id"
+              element={
+                <RequireRole roles={["creativo"]}>
+                  <PostForm />
                 </RequireRole>
               }
             />

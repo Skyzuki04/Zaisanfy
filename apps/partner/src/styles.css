@@ -5,7 +5,7 @@
   --text: #1d2433;
   --muted: #6b7280;
   --line: #e3e6eb;
-  --brand: #1f6feb;
+  --brand: #1a5fd0;
   --danger: #c62828;
   --ok: #1b7f3b;
   font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -42,7 +42,7 @@ input, select, textarea { font: inherit; padding: 8px 10px; border: 1px solid va
 button, .button { font: inherit; padding: 8px 14px; border-radius: 6px; border: 1px solid var(--line); background: #fff; cursor: pointer; text-decoration: none; color: var(--text); display: inline-block; }
 button.primary, .button.primary { background: var(--brand); color: #fff; border-color: var(--brand); }
 button.danger { color: var(--danger); border-color: #f2c4c4; }
-button.small { padding: 4px 8px; font-size: 0.8rem; }
+button.small, .button.small { padding: 4px 8px; font-size: 0.8rem; }
 button.link { border: none; background: none; color: var(--brand); padding: 0; }
 button:disabled { opacity: 0.6; cursor: default; }
 
@@ -69,3 +69,13 @@ button:disabled { opacity: 0.6; cursor: default; }
 .thumbs li.uploading { opacity: 0.6; }
 .thumbs img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 6px; }
 .pano img { width: 100%; max-height: 220px; object-fit: cover; border-radius: 8px; margin-top: 8px; }
+
+/* ZAI-27 · Perfil del creativo */
+.avatar { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; }
+.avatar.empty { display: grid; place-items: center; background: #eceff3; color: var(--muted); font-size: 0.75rem; }
+
+/* ZAI-28 · Portafolio */
+.posts { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+.posts li { display: flex; flex-direction: column; gap: 6px; padding: 12px; }
+.posts img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 6px; }
+.posts .badge { align-self: flex-start; }
