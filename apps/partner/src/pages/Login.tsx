@@ -1,3 +1,4 @@
+import Logo from "../components/Logo";
 import { useState, type FormEvent } from "react";
 import { Navigate } from "react-router-dom";
 import { SignInSchema, SignUpSchema } from "@zaisanfy/schemas";
@@ -38,8 +39,26 @@ export default function Login() {
   }
 
   return (
+    <div className="auth-split">
+      <aside className="auth-side">
+        <Logo size={40} />
+        <div>
+          <span className="eyebrow">Consola de socios</span>
+          <h2>
+            Publica, muestra y <em>conecta</em>
+          </h2>
+          <p>Sube tus propiedades con recorrido 360° o tu portafolio de renders y planos, y llega a quien busca su próximo hogar.</p>
+        </div>
+        <ul className="auth-points">
+          <li>Recorridos 360° en cada propiedad</li>
+          <li>Portafolio para arquitectos y artistas 3D</li>
+          <li>Tus datos protegidos por permisos</li>
+        </ul>
+      </aside>
     <div className="auth">
-      <h1>Zaisanfy · Consola de socios</h1>
+      <h1>
+        {mode === "entrar" ? <>Bienvenido de <em>vuelta</em></> : <>Crea tu <em>cuenta</em></>}
+      </h1>
       <div className="tabs">
         <button className={mode === "entrar" ? "active" : ""} onClick={() => setMode("entrar")} type="button">
           Iniciar sesión
@@ -78,6 +97,7 @@ export default function Login() {
           {mode === "entrar" ? "Entrar" : "Crear cuenta"}
         </button>
       </form>
+    </div>
     </div>
   );
 }

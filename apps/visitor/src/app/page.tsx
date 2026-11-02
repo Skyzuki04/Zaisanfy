@@ -1,6 +1,8 @@
 import Link from "next/link";
 import PropertyCard from "@/components/PropertyCard";
 import SearchForm from "@/components/SearchForm";
+import { orderedPhotos } from "@/lib/photos";
+import { cld } from "@/lib/cloudinary";
 import { hasFilters, parseFilters, searchProperties } from "@/lib/search";
 
 // Escaparate público (App 1) · ZAI-24: buscador con filtros.
@@ -9,13 +11,14 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
   const filters = parseFilters(await searchParams);
   const properties = await searchProperties(filters);
   const filtered = hasFilters(filters);
+  // La portada usa la foto de la primera propiedad publicada que tenga foto
+  const heroPhoto = properties.map((p) => orderedPhotos(p)[0]).find(Boolean);
 
   return (
     <>
-      <section className="hero">
-        <span className="hero-word" aria-hidden="true">
-          zaisanfy
-        </span>
+      <section className={`hero ${heroPhoto ? "with-photo" : ""}`}>
+        {heroPhoto && <img className="hero-photo" src={cld(heroPhoto, 1600)} alt="" fetchPriority="high" />}
+        <div className="hero-orbit" aria-hidden="true" />
         <div className="hero-inner">
           <div className="hero-row">
             <h1>

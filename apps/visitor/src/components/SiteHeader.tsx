@@ -1,5 +1,6 @@
 import Link from "next/link";
 import AccountLinks from "./AccountLinks";
+import Logo from "./Logo";
 
 /** Menú del Escaparate. */
 export default function SiteHeader() {
@@ -7,7 +8,7 @@ export default function SiteHeader() {
     <div className="header-wrap">
     <header className="site-header">
       <Link href="/" className="brand">
-        zaisan<em>fy</em>
+        <Logo />
       </Link>
       <nav>
         <Link href="/">Propiedades</Link>

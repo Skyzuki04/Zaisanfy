@@ -1,6 +1,7 @@
 import { NavLink, Navigate, Outlet } from "react-router-dom";
 import type { UserRole } from "@zaisanfy/schemas";
 import { useAuth } from "../auth/AuthProvider";
+import Logo from "./Logo";
 
 /** Marco de la Consola: menú según el rol y protección de rutas. */
 export default function Layout() {
@@ -14,7 +15,7 @@ export default function Layout() {
   return (
     <div className="shell">
       <header className="topbar">
-        <strong>Zaisanfy · Consola</strong>
+        <span className="row"><Logo size={30} /><span className="console-tag">Consola</span></span>
         <nav>
           {(role === "vendedor" || role === "admin") && <NavLink to="/propiedades">Mis propiedades</NavLink>}
           {role === "creativo" && <NavLink to="/perfil">Mi perfil</NavLink>}
