@@ -1,14 +1,15 @@
-/* Consola de socios · estilos base */
+/* Consola de socios · estilos base · Rediseño BINCA en versión clara */
 :root {
-  --bg: #f6f7f9;
+  --bg: #f4ecdc;
   --card: #ffffff;
-  --text: #1d2433;
-  --muted: #6b7280;
-  --line: #e3e6eb;
-  --brand: #1a5fd0;
-  --danger: #c62828;
+  --text: #1a1613;
+  --muted: #6b6b66;
+  --line: #e6e1d8;
+  --brand: #1a1613;
+  --gold: #c9a876;
+  --danger: #b3261e;
   --ok: #1b7f3b;
-  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-family: "Inter Tight", system-ui, -apple-system, "Segoe UI", sans-serif;
   color: var(--text);
   background: var(--bg);
 }
@@ -79,3 +80,26 @@ button:disabled { opacity: 0.6; cursor: default; }
 .posts li { display: flex; flex-direction: column; gap: 6px; padding: 12px; }
 .posts img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 6px; }
 .posts .badge { align-self: flex-start; }
+
+/* ===== Rediseño BINCA (Consola clara) ===== */
+h1 { font-weight: 400; letter-spacing: -0.02em; font-size: 2rem; }
+h1 em, h2 em { font-family: "Instrument Serif", Georgia, serif; font-style: italic; font-weight: 400; }
+.topbar { background: #0d0d0d; color: #f5f2ec; border-bottom: 0; padding: 14px 24px; }
+.topbar strong { font-weight: 300; font-size: 1.3rem; letter-spacing: -0.04em; }
+.topbar nav a { color: #d9d4ca; padding: 6px 14px; border-radius: 999px; }
+.topbar nav a.active { color: #1a1613; background: #fff; font-weight: 500; }
+.topbar .who { color: #a3a39e; }
+.topbar button.link { color: var(--gold); }
+.card { border-radius: 22px; border-color: transparent; box-shadow: 0 1px 2px rgba(26, 22, 19, 0.06); }
+input, select, textarea { border-radius: 12px; padding: 10px 14px; border-color: var(--line); }
+input:focus, select:focus, textarea:focus { outline: 2px solid var(--gold); outline-offset: 1px; border-color: var(--gold); }
+button, .button { border-radius: 999px; padding: 9px 18px; }
+button.primary, .button.primary { background: #1a1613; border-color: #1a1613; }
+button.primary:hover, .button.primary:hover { background: #000; }
+button.link { color: #8a6b3e; }
+.tabs button { border-radius: 999px; }
+.tabs button.active { background: #1a1613; color: #fff; border-color: #1a1613; }
+.table { border-radius: 22px; border-color: transparent; }
+.table th { font-weight: 500; color: var(--muted); font-size: 0.85rem; background: #faf7f1; }
+.thumbs li, .posts img, .thumbs img { border-radius: 14px; }
+.thumbs li.cover { border-color: var(--gold); }

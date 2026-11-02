@@ -4,9 +4,10 @@ import AccountLinks from "./AccountLinks";
 /** Menú del Escaparate. */
 export default function SiteHeader() {
   return (
+    <div className="header-wrap">
     <header className="site-header">
       <Link href="/" className="brand">
-        Zaisanfy
+        zaisan<em>fy</em>
       </Link>
       <nav>
         <Link href="/">Propiedades</Link>
@@ -14,5 +15,6 @@ export default function SiteHeader() {
         <AccountLinks />
       </nav>
     </header>
+    </div>
   );
 }

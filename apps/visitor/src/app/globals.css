@@ -1,27 +1,57 @@
-/* Escaparate público · estilos base */
+/* Escaparate público · estilos base · Rediseño BINCA (noche, crema y dorado) */
 :root {
-  --bg: #f6f7f9;
+  --night: #0d0d0d;
+  --night-2: #1a1613;
+  --cream: #f4ecdc;
+  --sand: #e8d5a8;
+  --gold: #c9a876;
+  --stone: #8a8a85;
+  --bg: var(--night);
   --card: #ffffff;
-  --text: #1d2433;
-  --muted: #6b7280;
-  --line: #e3e6eb;
-  --brand: #1a5fd0;
-  --danger: #c62828;
-  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --text: #f5f2ec;
+  --ink: #1a1613;
+  --muted: #a3a39e;
+  --muted-ink: #6b6b66;
+  --line: #2b2622;
+  --line-ink: #e6e1d8;
+  --brand: var(--gold);
+  --danger: #e57373;
+  --serif: "Instrument Serif", Georgia, serif;
+  font-family: "Inter Tight", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-weight: 300;
   color: var(--text);
   background: var(--bg);
 }
 * { box-sizing: border-box; }
-body { margin: 0; }
+body { margin: 0; background: var(--bg); }
 a { color: var(--brand); }
-.page { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+h1, h2, h3 { font-weight: 400; letter-spacing: -0.02em; }
+h1 { font-size: clamp(2rem, 5vw, 3.2rem); line-height: 1.05; }
+h1 em, h2 em, .serif { font-family: var(--serif); font-style: italic; font-weight: 400; }
+strong, b { font-weight: 600; }
+.page { max-width: 1180px; margin: 0 auto; padding: 32px 16px 64px; }
 .muted { color: var(--muted); }
 .error { color: var(--danger); }
-.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
-.cards { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
-.cards h2 { font-size: 1.05rem; margin: 0 0 6px; }
-.price { font-weight: 700; font-size: 1.1rem; }
+.card { background: var(--card); color: var(--ink); border: 1px solid var(--line-ink); border-radius: 22px; padding: 20px; }
+.card .muted { color: var(--muted-ink); }
+.card a { color: var(--ink); }
+.card .error { color: #b3261e; }
+.cards { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+.cards h2 { font-size: 1.2rem; margin: 0 0 6px; }
+.cards h2 a { text-decoration: none; }
+.price { font-weight: 300; font-size: 1.6rem; letter-spacing: -0.02em; }
 
+/* Portada (hero) */
+.hero { position: relative; min-height: 440px; padding: 56px 16px 32px; display: flex; flex-direction: column; justify-content: flex-end; background: radial-gradient(120% 90% at 70% 0%, #2a231d 0%, var(--night-2) 45%, var(--night) 100%); border-bottom: 1px solid var(--line); overflow: hidden; }
+.hero-inner { max-width: 1180px; width: 100%; margin: 0 auto; display: grid; gap: 28px; }
+.hero-word { position: absolute; top: -0.12em; left: 50%; transform: translateX(-50%); font-size: clamp(5rem, 19vw, 15rem); font-weight: 300; letter-spacing: -0.06em; color: rgba(244, 236, 220, 0.07); white-space: nowrap; pointer-events: none; user-select: none; }
+.hero h1 { margin: 0; max-width: 14ch; }
+.hero-row { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; flex-wrap: wrap; }
+.hero-lead { max-width: 34ch; color: var(--muted); line-height: 1.5; margin: 0; text-align: right; }
+@media (max-width: 700px) { .hero-lead { text-align: left; } }
+.section-title { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; margin: 8px 0 20px; }
+.section-title h2 { font-size: clamp(1.6rem, 3.5vw, 2.4rem); margin: 0; }
+.eyebrow { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--gold); }
 /* ZAI-23 · Detalle, visor 360 y galería */
 .detail h1 { margin-bottom: 4px; }
 .detail section { margin: 24px 0; }
@@ -102,3 +132,78 @@ button.primary, .button.primary { background: var(--brand); color: #fff; border-
 .form label { display: grid; gap: 4px; }
 .form input { padding: 10px; border: 1px solid var(--line); border-radius: 8px; font: inherit; }
 .notice { color: #146c2e; }
+
+/* ===== Rediseño BINCA · ajustes sobre los estilos de cada tarjeta ===== */
+.detail h1 { font-size: clamp(2rem, 4.5vw, 3rem); }
+.visor360, .gallery-main { border-radius: 22px; }
+.gallery-thumbs img { border-radius: 10px; }
+.gallery-thumbs button { border-radius: 12px; }
+.gallery-empty { background: var(--night-2); color: var(--muted); border-radius: 22px; }
+.facts { gap: 32px; }
+.description { color: #d9d4ca; line-height: 1.7; max-width: 70ch; }
+
+/* Buscador: barra oscura con campos tipo píldora */
+.search.card { background: rgba(26, 22, 19, 0.75); backdrop-filter: blur(8px); border: 1px solid rgba(244, 236, 220, 0.12); color: var(--text); border-radius: 26px; padding: 16px; }
+.search label { color: var(--muted); font-weight: 400; font-size: 0.8rem; }
+.search input, .search select { color: var(--text); background: rgba(13, 13, 13, 0.6); border: 1px solid rgba(244, 236, 220, 0.14); border-radius: 999px; padding: 10px 16px; }
+.search input::placeholder { color: var(--stone); }
+.search select option { color: var(--ink); }
+
+/* Botones */
+button, .button { padding: 10px 20px; border-radius: 999px; border: 1px solid var(--line-ink); background: #fff; color: var(--ink); font-weight: 400; transition: background .15s, color .15s, border-color .15s; }
+button:hover, .button:hover { border-color: var(--ink); }
+button.primary, .button.primary { background: var(--cream); color: var(--ink); border-color: var(--cream); }
+button.primary:hover, .button.primary:hover { background: var(--gold); border-color: var(--gold); }
+.card button.primary, .card .button.primary { background: var(--ink); color: #fff; border-color: var(--ink); }
+.card button.primary:hover, .card .button.primary:hover { background: #000; }
+.empty { padding: 48px 24px; }
+
+/* Tarjeta de propiedad */
+.property-card { padding: 0 0 6px; border-radius: 24px; border: 0; transition: transform .2s ease, box-shadow .2s ease; }
+.property-card:hover { transform: translateY(-4px); box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45); }
+.property-card h2, .property-card p { padding: 0 20px; }
+.property-card h2 { margin-top: 18px; font-size: 1.25rem; }
+.property-card .cover img, .property-card .no-photo { aspect-ratio: 5 / 4; background: #ece7dd; }
+.property-card .price { border-top: 1px solid var(--line-ink); margin: 14px 20px 14px; padding: 14px 0 0; }
+.tag360 { top: 14px; left: 14px; background: #fff; color: var(--ink); font-weight: 500; padding: 4px 10px; }
+.heart { width: 38px; height: 38px; border: 0; background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(6px); }
+.heart svg { stroke: var(--ink); }
+.heart.saved svg { fill: #c0264b; stroke: #c0264b; }
+.heart.on-card { top: 14px; right: 14px; }
+.heart:focus-visible { outline-color: var(--gold); }
+
+/* Creativos, portafolio y muro */
+.creative-avatar.empty { background: var(--night-2); color: var(--gold); }
+.post-card { border-radius: 24px; border: 0; }
+.post-card .cover img { background: #ece7dd; }
+.tag-category { top: 14px; left: 14px; background: #fff; color: var(--ink); padding: 4px 10px; }
+
+/* Menú superior */
+.site-header { max-width: 1180px; padding: 18px 16px; }
+.site-header .brand { font-weight: 300; font-size: 1.6rem; letter-spacing: -0.05em; color: var(--text); }
+.site-header .brand em { font-family: var(--serif); color: var(--gold); }
+.site-header nav { gap: 22px; }
+.site-header nav a { color: var(--text); text-decoration: none; font-weight: 400; }
+.site-header nav a:hover { color: var(--gold); }
+.header-wrap { position: sticky; top: 0; z-index: 10; background: rgba(13, 13, 13, 0.85); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+
+/* Filtros tipo píldora (muro) */
+.chips { display: inline-flex; gap: 4px; padding: 4px; background: var(--night-2); border: 1px solid var(--line); border-radius: 999px; margin-bottom: 24px; }
+.chip { border: 0; background: transparent; color: var(--muted); padding: 8px 18px; }
+.chip:hover { color: var(--text); }
+.chip.active { background: #fff; color: var(--ink); }
+
+/* Inicio de sesión y pestañas */
+.tabs button { border-radius: 999px; background: #f3efe7; border-color: transparent; color: var(--ink); }
+.tabs button.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+.form input { border-color: var(--line-ink); border-radius: 12px; color: var(--ink); }
+.link { color: var(--gold); }
+.card .link { color: var(--ink); }
+.notice { color: #7fc79a; }
+.card .notice { color: #146c2e; }
+.search.card button.primary { background: var(--cream); color: var(--ink); border-color: var(--cream); }
+.search.card button.primary:hover { background: var(--gold); border-color: var(--gold); }
+.search.card .button:not(.primary), .search.card button:not(.primary) { background: transparent; color: var(--text); border-color: rgba(244, 236, 220, 0.25); }
+.hero-inner { grid-template-columns: minmax(0, 1fr); }
+.hero-inner > * { min-width: 0; }
+@media (max-width: 900px) { .search label { min-width: 0; } .search input, .search select { width: 100%; } }
