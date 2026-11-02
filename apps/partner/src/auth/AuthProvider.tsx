@@ -25,13 +25,37 @@ async function loadProfile(userId: string): Promise<Profile | null> {
   return data as Profile | null;
 }
 
+/**
+ * Traspaso de sesión desde el Escaparate (otro origen, otra sesión guardada).
+ * Si el enlace trae #zs_at=…&zs_rt=…, esa cuenta reemplaza a la que hubiera aquí,
+ * y el hash se borra de la barra para que los tokens no queden en el historial.
+ * Con #zs_logout=1 (el Escaparate no tenía sesión) se cierra también la de aquí.
+ */
+async function adoptHandoff() {
+  const hash = new URLSearchParams(window.location.hash.slice(1));
+  if (hash.get("zs_logout")) {
+    window.history.replaceState(null, "", window.location.pathname + window.location.search);
+    await supabase.auth.signOut({ scope: "local" });
+    return;
+  }
+  const access_token = hash.get("zs_at");
+  const refresh_token = hash.get("zs_rt");
+  if (!access_token || !refresh_token) return;
+  window.history.replaceState(null, "", window.location.pathname + window.location.search);
+  const { error } = await supabase.auth.setSession({ access_token, refresh_token });
+  if (error) {
+    await supabase.auth.signOut();
+    window.location.replace("/entrar");
+  }
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data }) => {
+    adoptHandoff().then(() => supabase.auth.getSession()).then(async ({ data }) => {
       setSession(data.session);
       setProfile(data.session ? await loadProfile(data.session.user.id) : null);
       setLoading(false);

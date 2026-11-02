@@ -30,6 +30,20 @@ async function start() {
   if (started) return;
   started = true;
   const sb = await browserSupabase();
+  // Traspaso de sesión desde la Consola (#zs_at=…&zs_rt=…): esa cuenta reemplaza a la de aquí y el hash se borra.
+  // Con #zs_logout=1 (la Consola no tenía sesión) se cierra también la de aquí.
+  const hash = new URLSearchParams(window.location.hash.slice(1));
+  if (hash.get("zs_logout")) {
+    window.history.replaceState(null, "", window.location.pathname + window.location.search);
+    await sb.auth.signOut({ scope: "local" });
+  }
+  const at = hash.get("zs_at");
+  const rt = hash.get("zs_rt");
+  if (at && rt) {
+    window.history.replaceState(null, "", window.location.pathname + window.location.search);
+    const { error } = await sb.auth.setSession({ access_token: at, refresh_token: rt });
+    if (error) await sb.auth.signOut();
+  }
   sb.auth.getSession().then(({ data }) => loadIds(data.session));
   sb.auth.onAuthStateChange((event, session) => {
     if (event === "SIGNED_IN" || event === "SIGNED_OUT") setTimeout(() => loadIds(session), 0);

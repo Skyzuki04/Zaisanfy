@@ -5,6 +5,8 @@ import { SPECIALTY_LABEL } from "@zaisanfy/schemas";
 import { getCreativeProfile } from "@/lib/creatives";
 import { getCreativePosts } from "@/lib/posts";
 import PostCard from "@/components/PostCard";
+import CreativeOwnerActions from "@/components/CreativeOwnerActions";
+import ContactRequest from "@/components/ContactRequest";
 import { cld } from "@/lib/cloudinary";
 import { SITE_URL } from "@/lib/site";
 
@@ -40,7 +42,7 @@ export default async function CreativePage({ params }: Props) {
   return (
     <main className="page creative">
       <p>
-        <Link href="/">← Propiedades</Link>
+        <Link href="/muro">← Volver al muro de inspiración</Link>
       </p>
       <header className="creative-header">
         {c.avatar_url ? (
@@ -64,12 +66,17 @@ export default async function CreativePage({ params }: Props) {
         </div>
       </header>
       {c.bio && <p className="description">{c.bio}</p>}
+      <CreativeOwnerActions creativeId={c.id} />
+      <ContactRequest kind="cotizacion" ownerId={c.id} creativeId={c.id} label={`Solicitar cotización a ${c.display_name}`} />
 
       {/* ZAI-28 · Portafolio */}
       <section>
         <h2>Portafolio</h2>
         {posts.length === 0 ? (
-          <p className="muted">Este creativo todavía no ha publicado renders, planos ni ideas.</p>
+          <>
+            <p className="muted">Este creativo todavía no ha publicado renders, planos ni ideas.</p>
+            <CreativeOwnerActions creativeId={c.id} variant="empty" />
+          </>
         ) : (
           <ul className="cards posts">
             {posts.map((p) => (

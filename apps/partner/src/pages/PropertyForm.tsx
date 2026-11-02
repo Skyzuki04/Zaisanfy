@@ -95,10 +95,22 @@ export default function PropertyForm() {
       : await supabase.from("properties").update({ data: parsed.data }).eq("id", id);
     setSaving(false);
     if (error) return setSaveError(error.message);
-    navigate("/propiedades");
+    navigate("/propiedades", {
+      state: { notice: isNew ? "Propiedad guardada como borrador. Cuando esté lista, dale “Publicar” para que aparezca en el Escaparate." : "Cambios guardados." },
+    });
   }
 
-  if (!initial) return <p>{saveError ?? "Cargando…"}</p>;
+  if (!initial) {
+    if (!saveError) return <p>Cargando…</p>;
+    return (
+      <div className="card empty-state">
+        <h2>{saveError}</h2>
+        <Link to="/propiedades" className="button primary">
+          Volver a mis propiedades
+        </Link>
+      </div>
+    );
+  }
   const err = (k: string) => errors[k] && <small className="error">{errors[k]}</small>;
 
   return (

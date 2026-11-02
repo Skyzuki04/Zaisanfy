@@ -1,7 +1,9 @@
 import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 import { CreativeProfileInputSchema, SPECIALTY_LABEL, type CreativeProfile } from "@zaisanfy/schemas";
+import { Link } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../auth/AuthProvider";
+import { withSession } from "../components/Layout";
 import { checkImage, uploadImage } from "../lib/cloudinary";
 
 /**
@@ -19,6 +21,7 @@ export default function MiPerfil() {
   const [uploading, setUploading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
+  const [saved, setSaved] = useState(false);
 
   useEffect(() => {
     supabase
@@ -75,6 +78,8 @@ export default function MiPerfil() {
     if (error) return setMessage({ ok: false, text: error.message });
     setCurrent(data as CreativeProfile);
     setMessage({ ok: true, text: "Perfil guardado" });
+    setSaved(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   if (current === undefined) return <p>Cargando…</p>;
@@ -85,11 +90,38 @@ export default function MiPerfil() {
       <div className="row between">
         <h1>Mi perfil</h1>
         {current && (
-          <a href={`${visitorUrl}/creativos/${userId}`} target="_blank" rel="noreferrer" className="button">
-            Ver mi perfil público
-          </a>
+          <div className="row">
+            <a href={`${visitorUrl}/creativos/${userId}`} target="_blank" rel="noreferrer" onClick={(e) => withSession(e, session)} className="button">
+              Ver mi perfil público ↗
+            </a>
+            <Link to="/portafolio/nueva" className="button primary">
+              + Subir trabajo
+            </Link>
+          </div>
         )}
       </div>
+      {saved && (
+        <div className="card next-steps">
+          <div>
+            <span className="eyebrow">Perfil guardado</span>
+            <h2>
+              ¿Qué sigue? Sube tu <em>primer trabajo</em>
+            </h2>
+            <p className="muted">Tus renders, planos e ideas aparecen en tu perfil público y en el muro de inspiración.</p>
+          </div>
+          <div className="row">
+            <Link to="/portafolio/nueva" className="button primary">
+              + Subir mi primer trabajo
+            </Link>
+            <Link to="/portafolio" className="button">
+              Ir a mi portafolio
+            </Link>
+            <a href={`${visitorUrl}/creativos/${userId}`} target="_blank" rel="noreferrer" onClick={(e) => withSession(e, session)} className="button">
+              Ver perfil público ↗
+            </a>
+          </div>
+        </div>
+      )}
       {!current && <p className="muted">Todavía no tienes perfil público. Llénalo para aparecer en Zaisanfy.</p>}
       <form onSubmit={onSubmit} className="card form grid" noValidate>
         <div className="span2 row">
