@@ -222,3 +222,126 @@ button.primary:hover, .button.primary:hover { background: var(--gold); border-co
 .hero-orbit::after { content: "360°"; position: absolute; right: 9%; top: 6%; font-family: var(--serif); font-style: italic; font-size: 1.1rem; color: var(--gold); background: rgba(13,13,13,0.6); padding: 2px 10px; border-radius: 999px; transform: rotate(8deg); }
 .hero h1 { text-shadow: 0 2px 30px rgba(0,0,0,0.45); }
 .hero-lead { color: #d9d4ca; }
+
+/* ======================================================================
+   Capa "futurista": vidrio, brillos dorados, cuadrícula y animaciones.
+   Todo en CSS (sin librerías) para no afectar la velocidad (ZAI-26).
+   ====================================================================== */
+:root {
+  --glass: rgba(26, 22, 19, 0.55);
+  --glass-line: rgba(244, 236, 220, 0.09);
+  --glow: rgba(201, 168, 118, 0.35);
+  --gold-grad: linear-gradient(120deg, #f4ecdc 0%, #c9a876 45%, #e8d5a8 70%, #c9a876 100%);
+  --ease: cubic-bezier(.2, .7, .2, 1);
+}
+body {
+  background:
+    radial-gradient(900px 500px at 85% -10%, rgba(201,168,118,0.10), transparent 60%),
+    radial-gradient(700px 500px at -10% 40%, rgba(201,168,118,0.06), transparent 60%),
+    linear-gradient(rgba(244,236,220,0.025) 1px, transparent 1px) 0 0 / 64px 64px,
+    linear-gradient(90deg, rgba(244,236,220,0.025) 1px, transparent 1px) 0 0 / 64px 64px,
+    var(--night);
+  background-attachment: fixed;
+}
+::selection { background: var(--gold); color: var(--ink); }
+
+/* Menú: vidrio y subrayado dorado animado */
+.header-wrap { background: rgba(13,13,13,0.6); backdrop-filter: blur(14px) saturate(140%); border-bottom: 1px solid var(--glass-line); }
+.site-header nav a { position: relative; padding: 4px 0; }
+.site-header nav a::after { content: ""; position: absolute; left: 0; right: 0; bottom: -2px; height: 1px; background: var(--gold-grad); transform: scaleX(0); transform-origin: left; transition: transform .35s var(--ease); }
+.site-header nav a:hover::after { transform: scaleX(1); }
+.site-header .brand svg { transition: transform .5s var(--ease), filter .5s; }
+.site-header .brand:hover svg { transform: rotate(-8deg) scale(1.06); filter: drop-shadow(0 0 10px var(--glow)); }
+
+/* Portada: entrada escalonada, foto con zoom lento y órbita que gira */
+@keyframes rise { from { opacity: 0; transform: translateY(28px); filter: blur(6px); } to { opacity: 1; transform: none; filter: none; } }
+@keyframes kenburns { from { transform: scale(1.08); } to { transform: scale(1); } }
+@keyframes spin { to { transform: translateX(-50%) rotate(352deg); } }
+@keyframes travel { to { offset-distance: 100%; } }
+.hero h1 { animation: rise 1s var(--ease) both; }
+.hero-lead { animation: rise 1s var(--ease) .15s both; }
+.hero .search { animation: rise 1s var(--ease) .3s both; }
+.hero-photo { animation: kenburns 14s ease-out both; }
+.hero-orbit { animation: spin 60s linear infinite; border-color: rgba(201,168,118,0.28); box-shadow: 0 0 60px rgba(201,168,118,0.06) inset; }
+.hero::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); opacity: .5; }
+.hero h1 em, .section-title h2 em { background: var(--gold-grad); -webkit-background-clip: text; background-clip: text; color: transparent; padding-right: .08em; }
+
+/* Buscador de vidrio con brillo al enfocar */
+.search.card { background: var(--glass); backdrop-filter: blur(16px) saturate(140%); border-color: var(--glass-line); box-shadow: 0 30px 80px rgba(0,0,0,0.45); }
+.search input, .search select { transition: border-color .25s, box-shadow .25s, background .25s; }
+.search input:focus, .search select:focus, .form input:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 4px rgba(201,168,118,0.15); }
+
+/* Botones: brillo que cruza al pasar el mouse */
+button, .button { position: relative; overflow: hidden; transition: transform .25s var(--ease), background .25s, color .25s, border-color .25s, box-shadow .25s; }
+button:hover:not(:disabled), .button:hover { transform: translateY(-1px); }
+button.primary::after, .button.primary::after { content: ""; position: absolute; top: 0; left: -60%; width: 40%; height: 100%; background: linear-gradient(100deg, transparent, rgba(255,255,255,0.55), transparent); transform: skewX(-20deg); transition: left .6s var(--ease); }
+button.primary:hover::after, .button.primary:hover::after { left: 120%; }
+button.primary:hover, .button.primary:hover { box-shadow: 0 10px 30px var(--glow); }
+
+/* Tarjetas oscuras de vidrio con borde dorado al pasar */
+.card { background: linear-gradient(180deg, rgba(30,26,22,0.85), rgba(18,16,14,0.92)); color: var(--text); border: 1px solid var(--glass-line); backdrop-filter: blur(10px); }
+.card .muted { color: var(--muted); }
+.card a { color: var(--text); }
+.card .error { color: var(--danger); }
+.card .notice { color: #7fc79a; }
+.card .link { color: var(--gold); }
+.card button.primary, .card .button.primary { background: var(--cream); color: var(--ink); border-color: var(--cream); }
+.card button.primary:hover, .card .button.primary:hover { background: var(--gold); }
+.card button:not(.primary):not(.heart), .card .button:not(.primary) { background: transparent; color: var(--text); border-color: rgba(244,236,220,0.22); }
+.form input { background: rgba(13,13,13,0.55); color: var(--text); border-color: var(--glass-line); }
+.tabs button { background: rgba(26,22,19,0.7); color: var(--muted); border-color: var(--glass-line); }
+.tabs button.active { background: var(--cream); color: var(--ink); border-color: var(--cream); }
+
+.property-card, .post-card { transition: transform .45s var(--ease), box-shadow .45s var(--ease), border-color .45s; }
+.property-card::before, .post-card::before { content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1px; background: linear-gradient(140deg, rgba(201,168,118,0.9), transparent 40%, transparent 60%, rgba(201,168,118,0.6)); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; opacity: 0; transition: opacity .45s; pointer-events: none; z-index: 2; }
+.post-card { position: relative; }
+.property-card:hover, .post-card:hover { transform: translateY(-6px); box-shadow: 0 24px 60px rgba(0,0,0,0.55), 0 0 40px rgba(201,168,118,0.12); }
+.property-card:hover::before, .post-card:hover::before { opacity: 1; }
+.property-card .cover, .post-card .cover { overflow: hidden; }
+.property-card .cover img, .post-card .cover img { transition: transform 1.2s var(--ease), filter .6s; }
+.property-card:hover .cover img, .post-card:hover .cover img { transform: scale(1.07); filter: saturate(1.1); }
+.property-card .cover::after { content: ""; position: absolute; inset: auto 0 0 0; height: 45%; background: linear-gradient(transparent, rgba(13,13,13,0.55)); pointer-events: none; }
+.property-card .price { border-top-color: var(--glass-line); background: var(--gold-grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.property-card .no-photo, .post-card .cover img { background: #1d1915; }
+
+/* Etiquetas: vidrio con punto dorado que late */
+@keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(201,168,118,0.7); } 50% { box-shadow: 0 0 0 6px rgba(201,168,118,0); } }
+.tag360, .tag-category { background: rgba(13,13,13,0.55); color: var(--cream); backdrop-filter: blur(8px); border: 1px solid rgba(244,236,220,0.18); display: inline-flex; align-items: center; gap: 6px; z-index: 1; }
+.tag360::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--gold); animation: pulse 2s infinite; }
+
+/* Corazón de Mi Lista: dorado y con "pop" al guardar (ya no rosa) */
+@keyframes pop { 0% { transform: scale(1); } 40% { transform: scale(1.35); } 70% { transform: scale(.9); } 100% { transform: scale(1); } }
+.heart { background: rgba(13,13,13,0.5); backdrop-filter: blur(8px); border: 1px solid rgba(244,236,220,0.2); transition: transform .25s var(--ease), background .25s, border-color .25s; z-index: 3; }
+.heart svg { stroke: var(--cream); fill: none; transition: fill .3s, stroke .3s; }
+.heart:hover:not(:disabled) { transform: scale(1.08); border-color: var(--gold); }
+.heart.saved { background: rgba(201,168,118,0.18); border-color: var(--gold); }
+.heart.saved svg { fill: var(--gold); stroke: var(--gold); animation: pop .45s var(--ease); filter: drop-shadow(0 0 6px var(--glow)); }
+
+/* Filtros del muro */
+.chips { background: var(--glass); backdrop-filter: blur(10px); border-color: var(--glass-line); }
+.chip { transition: color .25s, background .3s; }
+.chip.active { background: var(--gold-grad); color: var(--ink); box-shadow: 0 6px 20px rgba(201,168,118,0.25); }
+
+/* Aparición de tarjetas al hacer scroll (navegadores modernos) o al cargar */
+.cards > li { animation: rise .8s var(--ease) both; }
+.cards > li:nth-child(2) { animation-delay: .08s; } .cards > li:nth-child(3) { animation-delay: .16s; }
+.cards > li:nth-child(4) { animation-delay: .24s; } .cards > li:nth-child(5) { animation-delay: .32s; } .cards > li:nth-child(6) { animation-delay: .4s; }
+@keyframes reveal { from { opacity: 0; transform: translateY(40px) scale(.97); } to { opacity: 1; transform: none; } }
+@supports (animation-timeline: view()) {
+  .cards > li { animation: reveal linear both; animation-delay: 0s !important; animation-timeline: view(); animation-range: entry 0% entry 30%; }
+  .detail section, .inspiration { animation: reveal linear both; animation-timeline: view(); animation-range: entry 0% entry 35%; }
+}
+.section-title .eyebrow::before { content: ""; display: inline-block; width: 28px; height: 1px; background: var(--gold); vertical-align: middle; margin-right: 10px; }
+
+/* Detalle y galería */
+.visor360 { box-shadow: 0 30px 80px rgba(0,0,0,0.5), 0 0 0 1px var(--glass-line); }
+.gallery-thumbs button { transition: border-color .25s, transform .25s; }
+.gallery-thumbs button:hover { transform: translateY(-2px); }
+.gallery-thumbs button.active { border-color: var(--gold); box-shadow: 0 0 16px var(--glow); }
+.visor360-play { background: rgba(13,13,13,0.6); backdrop-filter: blur(8px); border: 1px solid var(--gold); color: var(--cream); animation: pulse 2.4s infinite; }
+.creative-avatar { box-shadow: 0 0 0 2px var(--night), 0 0 0 3px var(--gold), 0 0 30px var(--glow); }
+
+/* Accesibilidad: sin movimiento si la persona lo pide */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
