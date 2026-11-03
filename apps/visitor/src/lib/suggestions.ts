@@ -1,5 +1,5 @@
 import type { Property } from "@zaisanfy/schemas";
-import { POST_SELECT, type PostWithCreative } from "./posts";
+import { POST_SELECT, toPosts, type PostWithCreative } from "./posts";
 import { supabase } from "./supabase";
 
 export type SuggestionRule = "ambos" | "tipo" | "ciudad";
@@ -17,7 +17,7 @@ export async function getSuggestedPosts(property: Property, rule: SuggestionRule
 
   const [t, c] = await Promise.all([rule !== "ciudad" ? byType() : null, rule !== "tipo" ? byCity() : null]);
   const all = new Map<string, PostWithCreative>();
-  for (const p of [...((t?.data as PostWithCreative[]) ?? []), ...((c?.data as PostWithCreative[]) ?? [])]) all.set(p.id, p);
+  for (const p of [...toPosts(t?.data ?? []), ...toPosts(c?.data ?? [])]) all.set(p.id, p);
 
   const sameCity = (p: PostWithCreative) => !!p.city && p.city.trim().toLowerCase() === city.toLowerCase();
   const score = (p: PostWithCreative) => (p.property_type === type ? 2 : 0) + (sameCity(p) ? 1 : 0);

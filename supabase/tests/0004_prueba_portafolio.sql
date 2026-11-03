@@ -22,14 +22,17 @@ begin
   exception when insufficient_privilege then null;
   end;
 
-  insert into public.creative_posts (creative_id, title, category, images, property_type, city)
-  values ('00000000-0000-0000-0000-00000000c001', 'Render de sala', 'render', array['https://res.cloudinary.com/x/image/upload/a.jpg'], 'casa', 'Zapopan');
+  perform public.save_post(null, 'Render de sala', null, 'render', 'casa', 'Zapopan',
+                           array['https://res.cloudinary.com/x/image/upload/a.jpg', 'https://res.cloudinary.com/x/image/upload/a2.jpg']);
+  if (select count(*) from public.post_images i join public.creative_posts p on p.id = i.post_id where p.title = 'Render de sala') <> 2 then
+    raise exception 'FALLA: no se guardaron las imágenes en orden';
+  end if;
 
   begin
-    insert into public.creative_posts (creative_id, title, category, images)
-    values ('00000000-0000-0000-0000-00000000c001', 'Sin imágenes', 'idea', array[]::text[]);
+    perform public.save_post(null, 'Sin imágenes', null, 'idea', null, null, array[]::text[]);
     raise exception 'FALLA: se guardó una publicación sin imágenes';
-  exception when check_violation then null;
+  exception when raise_exception then
+    if sqlerrm like 'FALLA%' then raise; end if;
   end;
 end $$;
 
@@ -56,9 +59,16 @@ begin
   if n > 0 then raise exception 'FALLA: B borró el portafolio de A'; end if;
 
   begin
-    insert into public.creative_posts (creative_id, title, category, images)
-    values ('00000000-0000-0000-0000-00000000c001', 'A nombre de A', 'idea', array['https://res.cloudinary.com/x/image/upload/b.jpg']);
+    insert into public.creative_posts (creative_id, title, category)
+    values ('00000000-0000-0000-0000-00000000c001', 'A nombre de A', 'idea');
     raise exception 'FALLA: B publicó en el portafolio de A';
+  exception when insufficient_privilege then null;
+  end;
+
+  begin
+    insert into public.post_images (post_id, url, position)
+    select id, 'https://res.cloudinary.com/x/image/upload/intruso.jpg', 5 from public.creative_posts where title = 'Render de sala';
+    raise exception 'FALLA: B agregó imágenes al portafolio de A';
   exception when insufficient_privilege then null;
   end;
 end $$;

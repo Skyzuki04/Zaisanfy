@@ -6,9 +6,11 @@ import { CONTACT_KIND_LABEL, CONTACT_STATUS_LABEL, type ContactRequest } from "@
 import { browserSupabase } from "@/lib/supabase-browser";
 import { useMiLista } from "@/lib/bookmarks";
 
+type Creative = { id: string; display_name: string };
 type Row = ContactRequest & {
-  property: { id: string; data: { title: string } } | null;
-  creative: { id: string; display_name: string } | null;
+  property: { id: string; title: string } | null;
+  creative: Creative | null;
+  post: { id: string; title: string; creative: Creative | null } | null;
 };
 
 const dateFmt = new Intl.DateTimeFormat("es-MX", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
@@ -25,7 +27,7 @@ export default function MisSolicitudesPage() {
       .then((sb) =>
         sb
           .from("contact_requests")
-          .select("*, property:properties(id, data), creative:creative_profiles(id, display_name)")
+          .select("*, kind, property:properties(id, title), creative:creative_profiles(id, display_name), post:creative_posts(id, title, creative:creative_profiles(id, display_name))")
           .eq("requester_id", userId)
           .order("created_at", { ascending: false }),
       )
@@ -75,13 +77,14 @@ export default function MisSolicitudesPage() {
       ) : (
         <ul className="requests">
           {rows.map((r) => {
+            const creative = r.creative ?? r.post?.creative ?? null;
             const target =
               r.kind === "visita"
                 ? r.property
-                  ? { href: `/propiedad/${r.property.id}`, name: r.property.data.title }
+                  ? { href: `/propiedad/${r.property.id}`, name: r.property.title }
                   : { href: null, name: "Propiedad que ya no está publicada" }
-                : r.creative
-                  ? { href: `/creativos/${r.creative.id}`, name: r.creative.display_name }
+                : creative
+                  ? { href: `/creativos/${creative.id}`, name: r.post ? `${creative.display_name} · ${r.post.title}` : creative.display_name }
                   : { href: null, name: "Creativo que ya no está disponible" };
             return (
               <li key={r.id} className="card request">
@@ -91,8 +94,7 @@ export default function MisSolicitudesPage() {
                 </div>
                 <h2>{target.href ? <Link href={target.href}>{target.name}</Link> : target.name}</h2>
                 <p className="muted">
-                  Enviada el {dateFmt.format(new Date(r.created_at))} como <strong>{r.requester_name ?? "tu cuenta"}</strong>
-                  {r.requester_email ? ` (${r.requester_email})` : ""}
+                  Enviada el {dateFmt.format(new Date(r.created_at))} desde <strong>{session.user.email ?? "tu cuenta"}</strong>
                 </p>
                 {r.preferred_times && <p>Horario: {r.preferred_times}</p>}
                 {r.message && <p className="request-msg">“{r.message}”</p>}

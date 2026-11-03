@@ -1,5 +1,4 @@
-import type { Property } from "@zaisanfy/schemas";
-import { PropertyType, Operation } from "@zaisanfy/schemas";
+import { PropertyType, Operation, PROPERTY_SELECT, toProperty, type Property, type PropertyRow } from "@zaisanfy/schemas";
 import { supabase } from "./supabase";
 
 export type Filters = {
@@ -35,22 +34,22 @@ export function hasFilters(f: Filters) {
 }
 
 export async function searchProperties(f: Filters): Promise<Property[]> {
-  let q = supabase.from("properties").select("*").eq("status", "published");
+  let q = supabase.from("properties").select(PROPERTY_SELECT).eq("status", "published");
   if (f.ubicacion) {
     const like = `*${f.ubicacion}*`;
     q = q.or(
       [
-        `data->location->>city.ilike.${like}`,
-        `data->location->>state.ilike.${like}`,
-        `data->location->>neighborhood.ilike.${like}`,
+        `city.ilike.${like}`,
+        `state.ilike.${like}`,
+        `neighborhood.ilike.${like}`,
       ].join(",")
     );
   }
-  if (f.tipo) q = q.eq("data->>propertyType", f.tipo);
-  if (f.operacion) q = q.eq("data->>operation", f.operacion);
-  if (f.min !== undefined) q = q.gte("data->price", f.min);
-  if (f.max !== undefined) q = q.lte("data->price", f.max);
+  if (f.tipo) q = q.eq("property_type", f.tipo);
+  if (f.operacion) q = q.eq("operation", f.operacion);
+  if (f.min !== undefined) q = q.gte("price", f.min);
+  if (f.max !== undefined) q = q.lte("price", f.max);
   const { data, error } = await q.order("created_at", { ascending: false }).limit(60);
   if (error) throw new Error(error.message);
-  return (data as Property[]) ?? [];
+  return ((data as unknown as PropertyRow[]) ?? []).map(toProperty);
 }

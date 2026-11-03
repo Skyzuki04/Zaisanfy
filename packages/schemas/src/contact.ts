@@ -46,10 +46,7 @@ export const ContactRequestSchema = z.object({
   property_id: z.string().uuid().nullable(),
   creative_id: z.string().uuid().nullable(),
   post_id: z.string().uuid().nullable(),
-  recipient_id: z.string().uuid(),
   requester_id: z.string().uuid(),
-  requester_name: z.string().nullable(),
-  requester_email: z.string().nullable(),
   phone: z.string().nullable(),
   operation: z.enum(["venta", "renta"]).nullable(),
   preferred_times: z.string().nullable(),
@@ -59,3 +56,23 @@ export const ContactRequestSchema = z.object({
   updated_at: z.string(),
 });
 export type ContactRequest = z.infer<typeof ContactRequestSchema>;
+
+export const CONTACT_SELECT = "*, kind";
+
+export type InboxRow = {
+  id: string;
+  kind: ContactKind;
+  property_id: string | null;
+  property_title: string | null;
+  creative_id: string | null;
+  post_id: string | null;
+  post_title: string | null;
+  requester_name: string | null;
+  requester_email: string | null;
+  phone: string | null;
+  operation: "venta" | "renta" | null;
+  preferred_times: string | null;
+  message: string | null;
+  status: ContactStatus;
+  created_at: string;
+};

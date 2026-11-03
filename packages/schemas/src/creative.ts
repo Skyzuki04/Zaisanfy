@@ -63,3 +63,24 @@ export const CreativePostSchema = CreativePostInputSchema.extend({
   updated_at: z.string(),
 });
 export type CreativePost = z.infer<typeof CreativePostSchema>;
+
+export type CreativePostRow = Omit<CreativePost, "images"> & { images?: { url: string; position: number }[] | null };
+
+export const POST_IMAGES_SELECT = "images:post_images(url, position)";
+
+export function toPost<T extends CreativePostRow>(row: T): Omit<T, "images"> & { images: string[] } {
+  const images = [...(row.images ?? [])].sort((a, b) => a.position - b.position).map((i) => i.url);
+  return { ...row, images };
+}
+
+export function toSavePostArgs(id: string | null, d: CreativePostInput) {
+  return {
+    p_id: id,
+    p_title: d.title,
+    p_description: d.description,
+    p_category: d.category,
+    p_property_type: d.property_type,
+    p_city: d.city,
+    p_images: d.images,
+  };
+}

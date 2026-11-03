@@ -1,13 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { CONTACT_KIND_LABEL, CONTACT_STATUS_LABEL, ContactStatus, type ContactRequest } from "@zaisanfy/schemas";
+import { CONTACT_KIND_LABEL, CONTACT_STATUS_LABEL, ContactStatus, type InboxRow } from "@zaisanfy/schemas";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../auth/AuthProvider";
 
-type Row = ContactRequest & {
-  property: { id: string; data: { title: string } } | null;
-  post: { id: string; title: string } | null;
-};
+type Row = InboxRow;
 
 const visitorUrl = import.meta.env.VITE_VISITOR_URL ?? "http://localhost:3000";
 const ORDER: Record<string, number> = { nueva: 0, contactado: 1, agendada: 2, cerrada: 3 };
@@ -15,22 +12,17 @@ const dateFmt = new Intl.DateTimeFormat("es-MX", { day: "numeric", month: "short
 const waLink = (phone: string) => `https://wa.me/${phone.replace(/\D/g, "").replace(/^(\d{10})$/, "52$1")}`;
 
 export default function Solicitudes() {
-  const { session, profile } = useAuth();
-  const userId = session!.user.id;
+  const { profile } = useAuth();
   const [rows, setRows] = useState<Row[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<"abiertas" | "todas">("abiertas");
 
   const load = useCallback(async () => {
-    const { data, error } = await supabase
-      .from("contact_requests")
-      .select("*, property:properties(id, data), post:creative_posts(id, title)")
-      .eq("recipient_id", userId)
-      .order("created_at", { ascending: false });
+    const { data, error } = await supabase.rpc("my_inbox");
     if (error) setError(error.message);
     const list = ((data as unknown as Row[]) ?? []).sort((a, b) => ORDER[a.status] - ORDER[b.status]);
     setRows(list);
-  }, [userId]);
+  }, []);
 
   useEffect(() => {
     load();
@@ -95,11 +87,11 @@ export default function Solicitudes() {
               </div>
               <h2>
                 {r.kind === "visita"
-                  ? r.property
-                    ? <Link to={`/propiedades/${r.property.id}`}>{r.property.data.title}</Link>
+                  ? r.property_id
+                    ? <Link to={`/propiedades/${r.property_id}`}>{r.property_title}</Link>
                     : "Propiedad borrada"
-                  : r.post
-                    ? <>Sobre: <a href={`${visitorUrl}/publicaciones/${r.post.id}`} target="_blank" rel="noreferrer">{r.post.title}</a></>
+                  : r.post_id
+                    ? <>Sobre: <a href={`${visitorUrl}/publicaciones/${r.post_id}`} target="_blank" rel="noreferrer">{r.post_title}</a></>
                     : "Desde tu perfil"}
               </h2>
               <dl className="request-data">

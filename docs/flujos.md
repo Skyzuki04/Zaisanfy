@@ -68,7 +68,7 @@ Todo lo anterior, más:
 | Corazón (cualquier tarjeta o detalle) | Guardar / quitar | se queda | `bookmarks` insert/delete (solo publicadas, solo lo suyo) |
 | Mi Lista `/mi-lista` | Tarjetas · quitar · "Quitar de la lista" si ya no está publicada · vacío: Buscar propiedades | `/propiedad/[id]` · `/` | `bookmarks` + `properties` |
 | Propiedad → Contactar | Formulario (comprar/rentar, horario, teléfono, mensaje) → Enviar · Cancelar | confirmación con **Ver mis solicitudes** / **Seguir viendo propiedades** | `contact_requests` insert (trigger `contact_requests_before_insert`) |
-| Creativo / publicación → Cotizar | Igual, kind `cotizacion` | confirmación con **Ver mis solicitudes** / **Seguir en el muro** | `contact_requests` insert |
+| Creativo / publicación → Cotizar | Igual; desde una publicación se guarda solo `post_id` | confirmación con **Ver mis solicitudes** / **Seguir en el muro** | `contact_requests` insert |
 | Mis solicitudes `/mis-solicitudes` | Cada solicitud con su estado · enlace a la propiedad o creativo · vacío: Ver propiedades / Ver creativos | `/propiedad/[id]` · `/creativos/[id]` · `/` · `/muro` | `contact_requests` select ("El cliente y quien la recibe ven la solicitud") |
 | Si entra a la Consola | "Tu cuenta es de cliente" · **Ir al Escaparate** · Salir y entrar con otra cuenta | Escaparate · `/entrar` | — |
 
@@ -83,9 +83,9 @@ límite de 5 por día, ya tiene una solicitud abierta ahí, contactarse a sí mi
 | Consola, entrar `/entrar` | Iniciar sesión · Crear cuenta (Vendedor/Creativo) · enlace "Entra al Escaparate" para clientes | `/` → `/propiedades` | Supabase Auth, `profiles` |
 | Menú Consola | Mis propiedades · Solicitudes · Ver Escaparate ↗ · nombre + rol · Salir | — | — |
 | Mis propiedades `/propiedades` | + Nueva propiedad · Editar · Ver publicada ↗ · Publicar / Cerrar / Ocultar / Borrador · Borrar · vacío: + Crear mi primera propiedad | `/propiedades/nueva` · `/propiedades/[id]` · Escaparate · se queda con aviso | `properties` (solo las suyas) |
-| Nueva / editar `/propiedades/nueva`, `/propiedades/[id]` | Datos · fotos y 360 (Cloudinary) · Guardar · Cancelar · ← Mis propiedades | `/propiedades` con aviso "guardada como borrador, dale Publicar" | `properties` insert/update; Cloudinary upload sin firma |
+| Nueva / editar `/propiedades/nueva`, `/propiedades/[id]` | Datos · fotos y 360 (Cloudinary) · Guardar · Cancelar · ← Mis propiedades | `/propiedades` con aviso "guardada como borrador, dale Publicar" | `save_property()` (propiedad + `property_photos`); Cloudinary upload sin firma |
 | Propiedad ajena o inexistente | Volver a mis propiedades | `/propiedades` | RLS ya lo impide |
-| Solicitudes `/solicitudes` | Abiertas / Todas · WhatsApp · Responder por correo · cambiar estado · enlace a la propiedad · vacío: Ver mis propiedades | `wa.me`, `mailto:` · `/propiedades/[id]` | `contact_requests` select/update(status) ("Quien la recibe cambia el estado") |
+| Solicitudes `/solicitudes` | Abiertas / Todas · WhatsApp · Responder por correo · cambiar estado · enlace a la propiedad · vacío: Ver mis propiedades | `wa.me`, `mailto:` · `/propiedades/[id]` | `my_inbox()` + `contact_requests` update(status) ("Quien la recibe cambia el estado") |
 
 ## 4. Creativo
 
@@ -96,8 +96,8 @@ límite de 5 por día, ya tiene una solicitud abierta ahí, contactarse a sí mi
 | Menú Consola | Mi perfil · Mi portafolio · Solicitudes · Ver Escaparate ↗ | — | — |
 | Mi perfil `/perfil` | Foto · datos · Guardar · Ver mi perfil público ↗ · + Subir trabajo · al guardar: "¿Qué sigue?" con Subir mi primer trabajo / Ir a mi portafolio / Ver perfil público | `/portafolio/nueva` · `/portafolio` · Escaparate | `creative_profiles` upsert |
 | Mi portafolio `/portafolio` | + Nueva publicación · Ver en mi perfil ↗ · Editar · Borrar · sin perfil: Ir a Mi perfil · vacío: + Subir mi primer trabajo | `/portafolio/nueva` · `/portafolio/[id]` · `/perfil` | `creative_posts` |
-| Nueva / editar publicación | Imágenes (Cloudinary) · Guardar · Cancelar · ajena: Volver a mi portafolio | `/portafolio` con aviso | `creative_posts` insert/update |
-| Solicitudes `/solicitudes` | Igual que el vendedor, con cotizaciones · enlace a la publicación · vacío: + Subir más trabajos | — | `contact_requests` |
+| Nueva / editar publicación | Imágenes (Cloudinary) · Guardar · Cancelar · ajena: Volver a mi portafolio | `/portafolio` con aviso | `save_post()` (publicación + `post_images`) |
+| Solicitudes `/solicitudes` | Igual que el vendedor, con cotizaciones · enlace a la publicación · vacío: + Subir más trabajos | — | `my_inbox()` |
 
 ## 5. Admin
 
@@ -110,8 +110,10 @@ Puede ver todas las solicitudes por la política "Admin ve todas las solicitudes
 |---|---|---|
 | Correo de aviso de solicitudes | Avisar al vendedor/creativo cuando llega una solicitud y al cliente cuando cambia el estado | Supabase Database Webhook o Edge Function sobre `contact_requests` (insert / update de `status`) + proveedor de correo (Resend, etc.) |
 | Captcha | Cloudflare Turnstile en el registro de las dos apps | Supabase Auth → Attack Protection; pasar `captchaToken` en `signUp` / `signInWithPassword` |
-| Pagos y premium | Stripe Checkout, tabla de suscripciones y campo premium | El premium solo lo cambia el servidor (webhook de Stripe con la service key); el usuario no puede editarlo (RLS) |
-| Pay-wall | Qué funciones son premium (más propiedades publicadas, destacar, más solicitudes, etc.) | Aplicarlo en RLS / triggers, no solo en la app |
+| Pagos y suscripciones (ZAI-32) | Página de planes con Stripe Checkout y webhook en una Edge Function | **La base ya está (0009).** El webhook, con la service key, escribe en `billing_customers`, `subscriptions`, `payments` y `subscription_payments`, y suma créditos del plan en `credit_movements` (`reason = plan`). Las apps leen `plans`, `my_plan()` y `my_credits()` |
+| Pay-wall y desbloqueo de leads (ZAI-33/34) | Ocultar el contacto del cliente en cotizaciones hasta desbloquear | Tablas `lead_unlocks` y `credit_movements` listas. Falta: que `my_inbox()` devuelva correo y teléfono solo si hay fila en `lead_unlocks`, y la Edge Function que cobra (pago o créditos) e inserta el desbloqueo |
+| Límites por plan | Aplicar `plans.max_published` al publicar | Un trigger en `properties` que compare con `my_plan()` |
+| Anuncios (ZAI-36) | Compra del anuncio y espacio "Patrocinado" | Tablas `ads` y `ad_events` listas; el anuncio se ve solo si `ad_is_live()`. La app registra vistas y clics en `ad_events` |
 | Verificación de vendedores | Teléfono por SMS y/o revisión manual antes de publicar | Bandera `verified` en `profiles`, solo la cambia admin o el servidor |
 | WhatsApp del vendedor para el cliente | Mostrar el WhatsApp del vendedor al cliente después de enviar la solicitud | Hoy el vendedor contacta al cliente; falta un campo de contacto del vendedor y exponerlo solo al solicitante |
 | Reportar y moderar | Botón "Reportar" y pantalla de admin para ocultar (`hidden`) | Tabla `reports` con límite por usuario |
@@ -120,5 +122,5 @@ Puede ver todas las solicitudes por la política "Admin ve todas las solicitudes
 
 ## Migraciones (aplicar en orden en el SQL Editor)
 
-`0001_properties` → `0002_profiles_y_permisos` → `0003_creative_profiles` → `0004_creative_posts` → `0005_bookmarks` → `0006_contact_requests` → `0007_upgrade_role`.
-Cada una tiene su prueba en `supabase/tests/` que termina con `ZAI-xx OK` y no deja datos.
+`0001_properties` → `0002_profiles_y_permisos` → `0003_creative_profiles` → `0004_creative_posts` → `0005_bookmarks` → `0006_contact_requests` → `0007_upgrade_role` → `0008_tercera_forma_normal` → `0009_pagos`.
+Cada una tiene su prueba en `supabase/tests/` que termina con `… OK` y no deja datos.

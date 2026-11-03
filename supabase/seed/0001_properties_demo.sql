@@ -1,54 +1,22 @@
 -- Datos demo: 3 propiedades
-insert into public.properties (seller_id, status, data)
-select u.id, v.status::public.property_status, v.data::jsonb
+insert into public.properties (seller_id, status, title, description, operation, property_type, price, currency,
+                               bedrooms, bathrooms, area_m2, state, city, neighborhood)
+select u.id, v.status::public.property_status, v.title, v.description, v.operation, v.property_type, v.price, 'MXN',
+       v.bedrooms, v.bathrooms, v.area_m2, v.state, v.city, v.neighborhood
 from (select id from auth.users order by created_at limit 1) as u,
 (values
-  ('published', '{
-    "title": "Casa con jardín en Zapopan",
-    "description": "Casa de dos plantas con jardín y cochera para dos autos.",
-    "operation": "venta",
-    "propertyType": "casa",
-    "price": 3850000,
-    "currency": "MXN",
-    "bedrooms": 3,
-    "bathrooms": 2.5,
-    "areaM2": 210,
-    "location": { "state": "Jalisco", "city": "Zapopan", "neighborhood": "Valle Real" },
-    "media": { "coverUrl": null, "gallery": [], "panorama360Url": null }
-  }'),
-  ('published', '{
-    "title": "Departamento cerca del centro de Monterrey",
-    "description": "Departamento amueblado con vista a la ciudad.",
-    "operation": "renta",
-    "propertyType": "departamento",
-    "price": 18500,
-    "currency": "MXN",
-    "bedrooms": 2,
-    "bathrooms": 2,
-    "areaM2": 95,
-    "location": { "state": "Nuevo León", "city": "Monterrey", "neighborhood": "Obispado" },
-    "media": { "coverUrl": null, "gallery": [], "panorama360Url": null }
-  }'),
-  ('draft', '{
-    "title": "Terreno para desarrollo en Querétaro",
-    "operation": "venta",
-    "propertyType": "terreno",
-    "price": 2100000,
-    "currency": "MXN",
-    "bedrooms": 0,
-    "bathrooms": 0,
-    "areaM2": 600,
-    "location": { "state": "Querétaro", "city": "Querétaro" },
-    "media": { "coverUrl": null, "gallery": [], "panorama360Url": null }
-  }')
-) as v(status, data)
+  ('published', 'Casa con jardín en Zapopan', 'Casa de dos plantas con jardín y cochera para dos autos.',
+   'venta', 'casa', 3850000, 3, 2.5, 210, 'Jalisco', 'Zapopan', 'Valle Real'),
+  ('published', 'Departamento cerca del centro de Monterrey', 'Departamento amueblado con vista a la ciudad.',
+   'renta', 'departamento', 18500, 2, 2, 95, 'Nuevo León', 'Monterrey', 'Obispado'),
+  ('draft', 'Terreno para desarrollo en Querétaro', null,
+   'venta', 'terreno', 2100000, 0, 0, 600, 'Querétaro', 'Querétaro', null)
+) as v(status, title, description, operation, property_type, price, bedrooms, bathrooms, area_m2, state, city, neighborhood)
 where not exists (
-  select 1 from public.properties p
-  where p.seller_id = u.id
-    and p.data->>'title' = v.data::jsonb->>'title'
+  select 1 from public.properties p where p.seller_id = u.id and p.title = v.title
 );
 
 -- Revisión: deben salir 3 filas
-select id, status, data->>'title' as titulo, (data->>'price')::numeric as precio, data #>> '{location,city}' as ciudad
+select id, status, title as titulo, price as precio, city as ciudad
 from public.properties
 order by created_at;

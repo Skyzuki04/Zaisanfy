@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { CATEGORY_LABEL, type CreativePost } from "@zaisanfy/schemas";
+import { CATEGORY_LABEL, POST_IMAGES_SELECT, toPost, type CreativePost, type CreativePostRow } from "@zaisanfy/schemas";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../auth/AuthProvider";
 import { withSession } from "../components/Layout";
@@ -19,11 +19,11 @@ export default function MiPortafolio() {
   const load = useCallback(async () => {
     const [{ data: prof }, { data, error }] = await Promise.all([
       supabase.from("creative_profiles").select("id").eq("id", userId).maybeSingle(),
-      supabase.from("creative_posts").select("*").eq("creative_id", userId).order("created_at", { ascending: false }),
+      supabase.from("creative_posts").select(`*, ${POST_IMAGES_SELECT}`).eq("creative_id", userId).order("created_at", { ascending: false }),
     ]);
     setHasProfile(!!prof);
     if (error) setError(error.message);
-    setRows((data as CreativePost[]) ?? []);
+    setRows(((data as CreativePostRow[]) ?? []).map((r) => toPost(r) as CreativePost));
   }, [userId]);
 
   useEffect(() => {

@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { PropertyDataSchema, type Property, type PropertyData } from "@zaisanfy/schemas";
+import { PROPERTY_SELECT, PropertyDataSchema, toProperty, toSavePropertyArgs, type Property, type PropertyData, type PropertyRow } from "@zaisanfy/schemas";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../auth/AuthProvider";
 import { STATUS_LABEL } from "../lib/properties";
@@ -39,15 +39,16 @@ export default function PropertyForm() {
     if (isNew) return;
     supabase
       .from("properties")
-      .select("*")
+      .select(PROPERTY_SELECT)
       .eq("id", id)
       .eq("seller_id", session!.user.id)
       .maybeSingle()
       .then(({ data }) => {
         if (!data) return setSaveError("No encontramos esta propiedad o no es tuya.");
-        setProperty(data as Property);
-        setInitial((data as Property).data);
-        setMedia((data as Property).data.media);
+        const p = toProperty(data as unknown as PropertyRow);
+        setProperty(p);
+        setInitial(p.data);
+        setMedia(p.data.media);
       });
   }, [id, isNew, session]);
 
@@ -84,9 +85,7 @@ export default function PropertyForm() {
     }
     setErrors({});
     setSaving(true);
-    const { error } = isNew
-      ? await supabase.from("properties").insert({ seller_id: session!.user.id, status: "draft", data: parsed.data })
-      : await supabase.from("properties").update({ data: parsed.data }).eq("id", id);
+    const { error } = await supabase.rpc("save_property", toSavePropertyArgs(isNew ? null : id!, parsed.data));
     setSaving(false);
     if (error) return setSaveError(error.message);
     navigate("/propiedades", {

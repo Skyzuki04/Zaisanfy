@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import type { Property } from "@zaisanfy/schemas";
+import { PROPERTY_SELECT, toProperty, type Property, type PropertyRow } from "@zaisanfy/schemas";
 import PropertyCard from "@/components/PropertyCard";
 import { browserSupabase } from "@/lib/supabase-browser";
 import { toggleBookmark, useMiLista } from "@/lib/bookmarks";
@@ -19,11 +19,11 @@ export default function MiListaPage() {
     if (!userId) return;
     browserSupabase()
       .then((sb) =>
-        sb.from("bookmarks").select("property_id, created_at, property:properties(*)").order("created_at", { ascending: false }),
+        sb.from("bookmarks").select(`property_id, created_at, property:properties(${PROPERTY_SELECT})`).order("created_at", { ascending: false }),
       )
       .then(({ data, error }) => {
         if (error) setError(error.message);
-        setRows((data as unknown as Row[]) ?? []);
+        setRows(((data as unknown as (Omit<Row, "property"> & { property: PropertyRow | null })[]) ?? []).map((r) => ({ ...r, property: r.property ? toProperty(r.property) : null })));
       });
   }, [userId]);
 

@@ -87,7 +87,8 @@ export default function ContactRequest({ kind, ownerId, propertyId, creativeId, 
     if (!parsed.success) return setError(parsed.error.issues[0].message);
     setBusy(true);
     const sb = await browserSupabase();
-    const { error } = await sb.from("contact_requests").insert(parsed.data);
+    const { kind: _kind, ...row } = parsed.data;
+    const { error } = await sb.from("contact_requests").insert(row);
     setBusy(false);
     if (error) return setError(error.message || "No se pudo enviar. Intenta de nuevo.");
     setSent(true);
