@@ -1,11 +1,4 @@
--- =====================================================================
--- ZAI-28 · Prueba de permisos del portafolio (y repaso de perfiles)
--- Crea 2 creativos, 1 vendedor y 1 visitante, se hace pasar por cada uno
--- y revisa qué puede ver y editar. Al final hace ROLLBACK: no deja datos.
--- Si todo sale bien, el resultado dice "ZAI-28 OK".
--- Si algo falla, sale un error que empieza con "FALLA:".
--- Requiere 0003_creative_profiles.sql y 0004_creative_posts.sql.
--- =====================================================================
+-- Prueba del portafolio
 begin;
 
 insert into auth.users (id, email, raw_user_meta_data) values
@@ -13,7 +6,7 @@ insert into auth.users (id, email, raw_user_meta_data) values
   ('00000000-0000-0000-0000-00000000c002', 'creativo.b@zaisanfy.test', '{"role": "creativo", "full_name": "Creativo B"}'),
   ('00000000-0000-0000-0000-00000000c003', 'vendedor.c@zaisanfy.test', '{"role": "vendedor", "full_name": "Vendedor C"}');
 
--- ---------- Creativa A ----------
+-- Creativa A
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub": "00000000-0000-0000-0000-00000000c001", "role": "authenticated"}', true);
 
@@ -40,7 +33,7 @@ begin
   end;
 end $$;
 
--- ---------- Creativo B ----------
+-- Creativo B
 reset role;
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub": "00000000-0000-0000-0000-00000000c002", "role": "authenticated"}', true);
@@ -70,7 +63,6 @@ begin
   end;
 end $$;
 
--- ---------- Vendedor C: no puede tener perfil de creativo ----------
 reset role;
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub": "00000000-0000-0000-0000-00000000c003", "role": "authenticated"}', true);
@@ -83,7 +75,6 @@ do $$ begin
   end;
 end $$;
 
--- ---------- Visitante sin sesión: ve perfiles y portafolios, no edita ----------
 reset role;
 set local role anon;
 select set_config('request.jwt.claims', '{"role": "anon"}', true);
@@ -108,5 +99,4 @@ end $$;
 reset role;
 rollback;
 
--- Si llegó hasta aquí, todas las revisiones pasaron
 select 'ZAI-28 OK' as resultado;

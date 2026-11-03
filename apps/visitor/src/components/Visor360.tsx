@@ -4,13 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import "@photo-sphere-viewer/core/index.css";
 import { cld } from "@/lib/cloudinary";
 
-/**
- * ZAI-23 · RF-VIS-02 · Visor 360 nativo.
- * Usa Photo Sphere Viewer con la foto equirectangular (2:1) guardada en Cloudinary.
- * Funciona con mouse y con el dedo (arrastrando).
- * ZAI-26: el visor (three.js, ~500 KB) se carga hasta que la persona toca "Iniciar recorrido";
- * antes solo se muestra una vista previa ligera en WebP.
- */
 export default function Visor360({ url, title }: { url: string; title: string }) {
   const container = useRef<HTMLDivElement>(null);
   const [error, setError] = useState(false);
@@ -20,13 +13,11 @@ export default function Visor360({ url, title }: { url: string; title: string })
     if (!started) return;
     let viewer: { destroy: () => void } | null = null;
     let cancelled = false;
-    // Se carga solo en el navegador (usa WebGL)
     import("@photo-sphere-viewer/core").then(({ Viewer }) => {
       if (cancelled || !container.current) return;
       try {
         const v = new Viewer({
           container: container.current,
-          // WebP + calidad automática: la foto 360 pesa mucho menos que el original
           panorama: cld(url),
           caption: title,
           loadingTxt: "Cargando recorrido 360…",
@@ -49,7 +40,6 @@ export default function Visor360({ url, title }: { url: string; title: string })
         v.addEventListener("panorama-error", () => setError(true));
         viewer = v;
       } catch {
-        // Navegadores o celulares sin WebGL 2: se avisa y se queda la galería normal
         setError(true);
       }
     });

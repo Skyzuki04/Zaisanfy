@@ -9,7 +9,6 @@ import { cld } from "@/lib/cloudinary";
 import { jsonLdString, postDescription, postJsonLd, postUrl } from "@/lib/seo";
 import Gallery from "@/components/Gallery";
 
-// ZAI-28 · Página de un render, plano o idea, con JSON-LD VisualArtwork (RNF-SEO-01).
 export const revalidate = 600;
 export function generateStaticParams() {
   return [];

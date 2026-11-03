@@ -2,8 +2,6 @@ import type { MetadataRoute } from "next";
 import { supabase } from "@/lib/supabase";
 import { SITE_URL } from "@/lib/site";
 
-// ZAI-25 · Sitemap con todas las propiedades publicadas, para que Google las encuentre.
-// ZAI-28 · También los perfiles de creativos y sus publicaciones.
 export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

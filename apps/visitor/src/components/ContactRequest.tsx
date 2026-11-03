@@ -10,21 +10,14 @@ import { useAccount } from "@/lib/role";
 
 type Props = {
   kind: ContactKind;
-  /** Dueño de la propiedad o el creativo: no se muestra el botón a sí mismo. */
   ownerId: string;
   propertyId?: string;
   creativeId?: string;
   postId?: string;
-  /** Operación de la propiedad (venta o renta), para preseleccionarla. */
   operation?: "venta" | "renta";
   label?: string;
 };
 
-/**
- * ZAI-33 (básico) · Botón y formulario de contacto.
- * Sin sesión manda a /entrar y regresa a esta misma página. Ver no pide cuenta; contactar sí.
- * El destinatario, el nombre y el correo los pone la base de datos (contact_requests_before_insert).
- */
 export default function ContactRequest({ kind, ownerId, propertyId, creativeId, postId, operation, label }: Props) {
   const { ready, session } = useMiLista();
   const pathname = usePathname();

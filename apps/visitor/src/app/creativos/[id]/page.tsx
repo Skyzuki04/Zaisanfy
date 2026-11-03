@@ -10,8 +10,6 @@ import ContactRequest from "@/components/ContactRequest";
 import { cld } from "@/lib/cloudinary";
 import { SITE_URL } from "@/lib/site";
 
-// ZAI-27 · RF-CRE-01 · Perfil público del creativo. ZAI-28 · con su portafolio.
-// ISR: se regenera cada 10 minutos para que los cambios del creativo se vean pronto.
 export const revalidate = 600;
 export function generateStaticParams() {
   return [];
@@ -69,7 +67,6 @@ export default async function CreativePage({ params }: Props) {
       <CreativeOwnerActions creativeId={c.id} />
       <ContactRequest kind="cotizacion" ownerId={c.id} creativeId={c.id} label={`Solicitar cotización a ${c.display_name}`} />
 
-      {/* ZAI-28 · Portafolio */}
       <section>
         <h2>Portafolio</h2>
         {posts.length === 0 ? (

@@ -4,7 +4,6 @@ import { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { toggleBookmark, useMiLista } from "@/lib/bookmarks";
 
-/** ZAI-31 · Botón de corazón: guarda o quita la propiedad de "Mi Lista". Sin sesión, manda a iniciar sesión. */
 export default function BookmarkButton({ propertyId, title, className = "" }: { propertyId: string; title: string; className?: string }) {
   const { ready, session, ids } = useMiLista();
   const router = useRouter();

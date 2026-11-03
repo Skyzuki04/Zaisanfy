@@ -6,11 +6,6 @@ import { useAuth } from "../auth/AuthProvider";
 import { withSession } from "../components/Layout";
 import { ALL_STATUSES, STATUS_ACTION, STATUS_LABEL, formatPrice } from "../lib/properties";
 
-/**
- * ZAI-21 · RF-VEN-01 · "Mis propiedades".
- * Lista solo las del vendedor (seller_id = usuario) en todos sus estados.
- * Las políticas RLS de ZAI-20 impiden ver o editar las de otro vendedor.
- */
 const visitorUrl = import.meta.env.VITE_VISITOR_URL ?? "http://localhost:3000";
 
 export default function MisPropiedades() {

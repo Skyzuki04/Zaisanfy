@@ -1,13 +1,4 @@
--- =====================================================================
--- ZAI-27 · RF-CRE-01 · Perfil público del creativo
--- - Un perfil por creativo (mismo id que su usuario).
--- - Cualquiera puede ver los perfiles (son públicos).
--- - Solo el dueño, con rol creativo, puede crearlo, editarlo o borrarlo.
--- Requiere 0002_profiles_y_permisos.sql.
---
--- Cómo usarlo: Supabase > SQL Editor > New query > pegar todo > Run.
--- =====================================================================
-
+-- Perfil del creativo
 create table public.creative_profiles (
   id            uuid primary key references public.profiles (id) on delete cascade,
   display_name  text not null check (length(trim(display_name)) between 2 and 80),

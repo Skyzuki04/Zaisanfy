@@ -5,7 +5,6 @@ import { orderedPhotos } from "@/lib/photos";
 import BookmarkButton from "./BookmarkButton";
 import { cld } from "@/lib/cloudinary";
 
-/** Tarjeta de una propiedad en los resultados del buscador. */
 export default function PropertyCard({ property }: { property: Property }) {
   const d = property.data;
   const cover = orderedPhotos(property)[0];

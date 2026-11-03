@@ -14,16 +14,12 @@ import { jsonLdString, propertyDescription, propertyJsonLd, propertyTitle, prope
 
 type Props = { params: Promise<{ id: string }> };
 
-// ZAI-26 · ISR (stale-while-revalidate): la página se genera una vez y se sirve desde caché.
-// Se regenera sola cada hora, o al momento con /api/revalidate cuando cambia la propiedad (ISR on-demand).
 export const revalidate = 3600;
 export const dynamicParams = true;
 export function generateStaticParams() {
-  // No se genera nada en el build: cada propiedad se genera la primera vez que alguien la visita
   return [];
 }
 
-// ZAI-25 · Meta tags (título, descripción, canonical y Open Graph para compartir)
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   const property = await getPublishedProperty(id);
@@ -40,7 +36,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-// ZAI-23 · Detalle de la propiedad con su recorrido 360. ZAI-25 · JSON-LD RealEstateListing en el HTML del servidor.
 export default async function PropertyPage({ params }: Props) {
   const { id } = await params;
   const property = await getPublishedProperty(id);
@@ -84,7 +79,6 @@ export default async function PropertyPage({ params }: Props) {
       </section>
       {d.description && <p className="description">{d.description}</p>}
 
-      {/* ZAI-30 · RF-VIS-03 · Renders de creativos para propiedades parecidas */}
       {suggestions.length > 0 && (
         <section className="inspiration" aria-labelledby="inspiracion">
           <div className="section-head">

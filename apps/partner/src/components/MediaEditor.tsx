@@ -2,12 +2,6 @@ import { useState, type ChangeEvent } from "react";
 import type { PropertyData } from "@zaisanfy/schemas";
 import { check360, checkImage, uploadImage } from "../lib/cloudinary";
 
-/**
- * ZAI-22 · RF-VEN-02 · Fotos normales y foto 360 de una propiedad.
- * - Varias fotos a la vez, con vista previa mientras suben.
- * - Portada y orden de la galería.
- * - La foto 360 se valida (2:1) antes de subirla.
- */
 type Media = PropertyData["media"];
 type Pending = { id: string; name: string; preview: string };
 

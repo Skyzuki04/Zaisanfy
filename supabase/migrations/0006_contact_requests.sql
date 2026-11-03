@@ -1,23 +1,8 @@
--- =====================================================================
--- ZAI-33 (versión básica) · Contacto con el vendedor y cotización con el creativo
--- - El cliente con sesión pide una visita a una propiedad publicada
---   o una cotización a un creativo.
--- - La solicitud le llega al vendedor o al creativo (recipient_id), que la ve en la Consola
---   y le cambia el estado: nueva -> contactado -> agendada -> cerrada.
--- - La base de datos decide quién la recibe y copia el nombre y el correo del cliente:
---   no se confía en lo que mande la app.
--- - Candados: correo confirmado, máximo 5 solicitudes en 24 h, una sola abierta
---   por propiedad (o por creativo) y nadie se contacta a sí mismo.
--- Requiere 0002 a 0004.
---
--- Cómo usarlo: Supabase > SQL Editor > New query > pegar todo > Run.
--- =====================================================================
-
--- 1) Tipos (deben coincidir con ContactKind y ContactStatus en packages/schemas)
+-- Solicitudes de contacto
 create type public.contact_kind as enum ('visita', 'cotizacion');
 create type public.contact_status as enum ('nueva', 'contactado', 'agendada', 'cerrada');
 
--- 2) Tabla
+-- Tabla
 create table public.contact_requests (
   id               uuid primary key default gen_random_uuid(),
   kind             public.contact_kind not null,
@@ -35,7 +20,6 @@ create table public.contact_requests (
   status           public.contact_status not null default 'nueva',
   created_at       timestamptz not null default now(),
   updated_at       timestamptz not null default now(),
-  -- una visita es de una propiedad; una cotización es para un creativo
   check (
     (kind = 'visita' and property_id is not null and creative_id is null)
     or (kind = 'cotizacion' and creative_id is not null and property_id is null)
@@ -51,8 +35,6 @@ create trigger contact_requests_set_updated_at
 before update on public.contact_requests
 for each row execute function public.set_updated_at();
 
--- 3) Antes de guardar: la base de datos completa y valida la solicitud.
---    security definer para poder leer auth.users y las propiedades del vendedor.
 create or replace function public.contact_requests_before_insert()
 returns trigger
 language plpgsql
@@ -84,7 +66,6 @@ begin
     if v_recipient is null then
       raise exception 'Este creativo ya no está disponible' using errcode = 'P0001';
     end if;
-    -- la publicación solo se guarda si es de ese creativo
     if new.post_id is not null
        and not exists (select 1 from public.creative_posts cp where cp.id = new.post_id and cp.creative_id = new.creative_id) then
       new.post_id := null;
@@ -108,7 +89,6 @@ begin
     raise exception 'Ya tienes una solicitud abierta aquí. Te contactarán pronto' using errcode = 'P0001';
   end if;
 
-  -- datos del cliente desde su cuenta (no desde el formulario)
   select coalesce(pr.full_name, split_part(u.email, '@', 1)), u.email
     into new.requester_name, new.requester_email
   from auth.users u left join public.profiles pr on pr.id = u.id
@@ -125,12 +105,11 @@ create trigger contact_requests_before_insert
 before insert on public.contact_requests
 for each row execute function public.contact_requests_before_insert();
 
--- 4) Solo el estado se puede cambiar después de enviarla
 revoke update on public.contact_requests from anon, authenticated;
 grant update (status) on public.contact_requests to authenticated;
 revoke all on public.contact_requests from anon;
 
--- 5) Políticas
+-- Políticas
 alter table public.contact_requests enable row level security;
 
 create policy "El cliente envía solicitudes a su nombre"

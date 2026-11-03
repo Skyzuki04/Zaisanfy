@@ -1,6 +1,5 @@
 import type { Property, PropertyStatus } from "@zaisanfy/schemas";
 
-/** Textos en español de cada estado (RF-VEN-01). */
 export const STATUS_LABEL: Record<PropertyStatus, string> = {
   draft: "Borrador",
   published: "Publicada",
@@ -8,7 +7,6 @@ export const STATUS_LABEL: Record<PropertyStatus, string> = {
   hidden: "Oculta",
 };
 
-/** Botón para pasar a cada estado. */
 export const STATUS_ACTION: Record<PropertyStatus, string> = {
   draft: "Pasar a borrador",
   published: "Publicar",

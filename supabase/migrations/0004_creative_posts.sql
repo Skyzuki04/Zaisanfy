@@ -1,15 +1,4 @@
--- =====================================================================
--- ZAI-28 · RF-CRE-01 · Portafolio del creativo (renders, planos e ideas)
--- - Cada publicación pertenece a un perfil de creativo.
--- - Las imágenes viven en Cloudinary; aquí solo se guardan las URLs.
--- - property_type y city son opcionales y sirven para sugerir diseños en
---   el detalle de una propiedad (ZAI-30).
--- - Todos ven el portafolio; solo el dueño crea, edita y borra.
--- Requiere 0003_creative_profiles.sql.
---
--- Cómo usarlo: Supabase > SQL Editor > New query > pegar todo > Run.
--- =====================================================================
-
+-- Portafolio del creativo
 create type public.post_category as enum ('render', 'plano', 'idea');
 
 create table public.creative_posts (
@@ -31,7 +20,6 @@ create trigger creative_posts_set_updated_at
 before update on public.creative_posts
 for each row execute function public.set_updated_at();
 
--- Índices para el perfil, el muro (recientes y por categoría) y las sugerencias
 create index creative_posts_creative_idx  on public.creative_posts (creative_id, created_at desc);
 create index creative_posts_recent_idx    on public.creative_posts (created_at desc);
 create index creative_posts_category_idx  on public.creative_posts (category, created_at desc);

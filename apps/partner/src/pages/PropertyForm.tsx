@@ -6,11 +6,6 @@ import { useAuth } from "../auth/AuthProvider";
 import { STATUS_LABEL } from "../lib/properties";
 import MediaEditor from "../components/MediaEditor";
 
-/**
- * ZAI-21 · RF-VEN-01 · Alta y edición de una propiedad.
- * ZAI-22 · RF-VEN-02 · Fotos y foto 360 (MediaEditor).
- * El formulario se valida con el mismo esquema Zod que usa todo el proyecto (packages/schemas).
- */
 type Errors = Record<string, string>;
 
 const EMPTY: PropertyData = {
@@ -25,7 +20,6 @@ const EMPTY: PropertyData = {
   media: { coverUrl: null, gallery: [], panorama360Url: null },
 };
 
-// Convierte el texto de un campo numérico: vacío -> undefined, si no -> número
 const num = (v: FormDataEntryValue | null) => (v === null || String(v).trim() === "" ? undefined : Number(v));
 const text = (v: FormDataEntryValue | null) => (v === null || String(v).trim() === "" ? undefined : String(v).trim());
 

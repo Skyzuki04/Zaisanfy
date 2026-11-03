@@ -1,12 +1,4 @@
--- =====================================================================
--- ZAI-31 · RF-VIS-04 · "Mi Lista" (propiedades guardadas)
--- - Cada usuario guarda propiedades publicadas en su lista.
--- - Nadie ve ni toca la lista de otra persona.
--- Requiere 0002_profiles_y_permisos.sql.
---
--- Cómo usarlo: Supabase > SQL Editor > New query > pegar todo > Run.
--- =====================================================================
-
+-- Mi Lista
 create table public.bookmarks (
   user_id      uuid not null default auth.uid() references auth.users (id) on delete cascade,
   property_id  uuid not null references public.properties (id) on delete cascade,

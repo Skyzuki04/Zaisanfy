@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { cld } from "@/lib/cloudinary";
 
-/** ZAI-23 · Galería normal: se usa siempre y es la vista principal si la propiedad no tiene foto 360. */
 export default function Gallery({ images, title }: { images: string[]; title: string }) {
   const [current, setCurrent] = useState(0);
   if (images.length === 0) return <div className="gallery-empty">Sin fotos todavía</div>;

@@ -8,7 +8,6 @@ import { forgetAccount, useAccount } from "@/lib/role";
 import { browserSupabase } from "@/lib/supabase-browser";
 import ConsoleLink, { goToConsole } from "./ConsoleLink";
 
-/** Acceso a la Consola según el rol: el visitante no lo ve. */
 const CONSOLE_LINK: Record<string, { path: string; label: string }> = {
   creativo: { path: "/perfil", label: "Mi perfil" },
   vendedor: { path: "/propiedades", label: "Mis propiedades" },
@@ -16,16 +15,11 @@ const CONSOLE_LINK: Record<string, { path: string; label: string }> = {
 };
 const ROLE_LABEL: Record<string, string> = { visitante: "Cliente", vendedor: "Vendedor", creativo: "Creativo", admin: "Admin" };
 
-/**
- * ZAI-31 · Cuenta en el menú. Con sesión siempre se ve quién es (inicial y nombre) y un menú para salir;
- * "Entrar" solo aparece sin sesión. Vendedores y creativos ven también su acceso a la Consola.
- */
 export default function AccountLinks() {
   const { ready, session, ids } = useMiLista();
   const { role, name, email, userId } = useAccount();
   const [upgradeError, setUpgradeError] = useState<string | null>(null);
 
-  /** Mejora de cuenta: el cliente se vuelve vendedor o creativo (RPC upgrade_role) y cruza a su Consola. */
   async function upgrade(newRole: "vendedor" | "creativo") {
     const what = newRole === "vendedor" ? "vendedor (publicar propiedades)" : "creativo (publicar tu portafolio)";
     if (!window.confirm(`¿Convertir tu cuenta en ${what}? Seguirás pudiendo usar Mi Lista y tus solicitudes.`)) return;
@@ -40,7 +34,6 @@ export default function AccountLinks() {
   const menu = useRef<HTMLDetailsElement>(null);
   const consoleLink = session && role ? CONSOLE_LINK[role] : undefined;
 
-  // El menú se cierra al cambiar de página
   useEffect(() => {
     if (menu.current) menu.current.open = false;
   }, [pathname]);
@@ -53,7 +46,6 @@ export default function AccountLinks() {
           {consoleLink.label}
         </ConsoleLink>
       )}
-      {/* "Entrar" se pinta desde el servidor para que el menú no brinque al cargar la sesión */}
       {session ? (
         <details className="account-menu" ref={menu}>
           <summary aria-label={`Cuenta de ${name ?? email ?? ""}`}>

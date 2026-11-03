@@ -9,7 +9,6 @@ import MiPerfil from "./pages/MiPerfil";
 import MiPortafolio from "./pages/MiPortafolio";
 import PostForm from "./pages/PostForm";
 
-// Consola de socios (App 2): vendedores y creativos.
 export default function App() {
   return (
     <AuthProvider>

@@ -4,10 +4,6 @@ import { useEffect, useSyncExternalStore } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { browserSupabase } from "./supabase-browser";
 
-/**
- * ZAI-31 · RF-VIS-04 · Estado de la sesión y de "Mi Lista" compartido por todos los corazones de la página.
- * Se carga una sola vez (una consulta) y se actualiza al guardar o quitar.
- */
 type State = { ready: boolean; session: Session | null; ids: ReadonlySet<string> };
 
 let state: State = { ready: false, session: null, ids: new Set() };
@@ -30,8 +26,6 @@ async function start() {
   if (started) return;
   started = true;
   const sb = await browserSupabase();
-  // Traspaso de sesión desde la Consola (#zs_at=…&zs_rt=…): esa cuenta reemplaza a la de aquí y el hash se borra.
-  // Con #zs_logout=1 (la Consola no tenía sesión) se cierra también la de aquí.
   const hash = new URLSearchParams(window.location.hash.slice(1));
   if (hash.get("zs_logout")) {
     window.history.replaceState(null, "", window.location.pathname + window.location.search);
@@ -51,7 +45,6 @@ async function start() {
   });
 }
 
-/** Arranca cuando el navegador está libre, para no competir con la carga de la página. */
 function startWhenIdle() {
   const w = window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number };
   if (w.requestIdleCallback) w.requestIdleCallback(() => void start(), { timeout: 2000 });
@@ -69,18 +62,16 @@ export function useMiLista() {
   return useSyncExternalStore(subscribe, () => state, () => serverState);
 }
 
-/** Cierra la sesión del visitante. */
 export async function signOut() {
   await (await browserSupabase()).auth.signOut();
 }
 
-/** Guarda o quita una propiedad. Devuelve el error o null. */
 export async function toggleBookmark(propertyId: string): Promise<string | null> {
   const saved = state.ids.has(propertyId);
   const ids = new Set(state.ids);
   if (saved) ids.delete(propertyId);
   else ids.add(propertyId);
-  set({ ids }); // se ve al instante; si falla se regresa
+  set({ ids });
 
   const sb = await browserSupabase();
   const { error } = saved

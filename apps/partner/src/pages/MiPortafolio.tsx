@@ -5,11 +5,6 @@ import { supabase } from "../lib/supabase";
 import { useAuth } from "../auth/AuthProvider";
 import { withSession } from "../components/Layout";
 
-/**
- * ZAI-28 · RF-CRE-01 · "Mi portafolio".
- * Lista las publicaciones del creativo (renders, planos e ideas) para editarlas o borrarlas.
- * RLS: solo el dueño puede editar o borrar.
- */
 const visitorUrl = import.meta.env.VITE_VISITOR_URL ?? "http://localhost:3000";
 
 export default function MiPortafolio() {

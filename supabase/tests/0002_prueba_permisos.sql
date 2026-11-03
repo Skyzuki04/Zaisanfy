@@ -1,21 +1,11 @@
--- =====================================================================
--- ZAI-20 · Prueba de permisos con 2 vendedores y 1 visitante
--- Crea usuarios de prueba, se hace pasar por cada uno y revisa qué puede
--- ver y editar. Al final hace ROLLBACK: no deja nada guardado.
--- Si todo sale bien, el último resultado dice "ZAI-20 OK".
--- Si algo falla, sale un error que empieza con "FALLA:".
---
--- Cómo usarlo: Supabase > SQL Editor > New query > pegar todo > Run.
--- =====================================================================
+-- Prueba de permisos. Resultado: ZAI-20 OK
 begin;
 
--- Usuarios de prueba (el trigger les crea el perfil con su rol)
 insert into auth.users (id, email, raw_user_meta_data) values
   ('00000000-0000-0000-0000-0000000000a1', 'vendedora.a@zaisanfy.test', '{"role": "vendedor", "full_name": "Vendedora A"}'),
   ('00000000-0000-0000-0000-0000000000b2', 'vendedor.b@zaisanfy.test',  '{"role": "vendedor", "full_name": "Vendedor B"}'),
   ('00000000-0000-0000-0000-0000000000c3', 'visitante@zaisanfy.test',   '{"role": "admin"}');  -- pide admin a propósito
 
--- Una propiedad publicada y una en borrador de cada vendedor
 insert into public.properties (seller_id, status, data)
 select s.id, st.status::public.property_status,
        jsonb_build_object('title', 'Prueba ' || st.status || ' ' || s.tag, 'propertyType', 'casa',
@@ -33,7 +23,7 @@ do $$ begin
   end if;
 end $$;
 
--- ---------- Visitante sin sesión (anon) ----------
+-- Visitante sin sesión (anon)
 set local role anon;
 select set_config('request.jwt.claims', '{"role": "anon"}', true);
 
@@ -52,7 +42,7 @@ do $$ begin
   end;
 end $$;
 
--- ---------- Vendedora A ----------
+-- Vendedora A
 reset role;
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub": "00000000-0000-0000-0000-0000000000a1", "role": "authenticated"}', true);
@@ -107,7 +97,7 @@ begin
   end if;
 end $$;
 
--- ---------- Visitante con sesión ----------
+-- Visitante con sesión
 reset role;
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub": "00000000-0000-0000-0000-0000000000c3", "role": "authenticated"}', true);
@@ -124,7 +114,6 @@ do $$ begin
   end if;
 end $$;
 
--- ---------- Admin (solo se asigna desde el SQL Editor) ----------
 reset role;
 update public.profiles set role = 'admin' where id = '00000000-0000-0000-0000-0000000000c3';
 set local role authenticated;
@@ -141,5 +130,4 @@ end $$;
 reset role;
 rollback;
 
--- Si llegó hasta aquí, todas las revisiones pasaron
 select 'ZAI-20 OK' as resultado;

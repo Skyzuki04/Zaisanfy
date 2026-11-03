@@ -6,10 +6,6 @@ import { CONTACT_KIND_LABEL, CONTACT_STATUS_LABEL, type ContactRequest } from "@
 import { browserSupabase } from "@/lib/supabase-browser";
 import { useMiLista } from "@/lib/bookmarks";
 
-/**
- * ZAI-33 (básico) · "Mis solicitudes": visitas y cotizaciones que envió el cliente, con su estado.
- * RLS: cada quien ve solo las suyas (y quien las recibe, en la Consola).
- */
 type Row = ContactRequest & {
   property: { id: string; data: { title: string } } | null;
   creative: { id: string; display_name: string } | null;

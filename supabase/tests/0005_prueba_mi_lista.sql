@@ -1,9 +1,4 @@
--- =====================================================================
--- ZAI-31 · Prueba de "Mi Lista" con 2 visitantes
--- Al final hace ROLLBACK: no deja datos.
--- Si todo sale bien, el resultado dice "ZAI-31 OK".
--- Requiere 0005_bookmarks.sql.
--- =====================================================================
+-- Prueba de Mi Lista
 begin;
 
 insert into auth.users (id, email, raw_user_meta_data) values
@@ -17,7 +12,7 @@ insert into public.properties (id, seller_id, status, data) values
   ('00000000-0000-0000-0000-0000000000f2', '00000000-0000-0000-0000-00000000d003', 'draft',
    '{"title": "Borrador de prueba", "propertyType": "casa", "price": 100, "location": {"state": "Jalisco", "city": "Zapopan"}}');
 
--- ---------- Visitante A ----------
+-- Visitante A
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub": "00000000-0000-0000-0000-00000000d001", "role": "authenticated"}', true);
 
@@ -46,7 +41,7 @@ begin
   end;
 end $$;
 
--- ---------- Visitante B ----------
+-- Visitante B
 reset role;
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub": "00000000-0000-0000-0000-00000000d002", "role": "authenticated"}', true);
@@ -60,7 +55,7 @@ begin
   if n > 0 then raise exception 'FALLA: B borró de la lista de A'; end if;
 end $$;
 
--- ---------- A quita de su lista ----------
+-- A quita de su lista
 reset role;
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub": "00000000-0000-0000-0000-00000000d001", "role": "authenticated"}', true);
@@ -73,7 +68,7 @@ begin
   if n <> 1 then raise exception 'FALLA: A no pudo quitar de su lista'; end if;
 end $$;
 
--- ---------- Sin sesión no hay lista ----------
+-- Sin sesión no hay lista
 reset role;
 set local role anon;
 select set_config('request.jwt.claims', '{"role": "anon"}', true);
