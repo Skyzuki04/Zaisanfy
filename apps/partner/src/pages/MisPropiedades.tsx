@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import type { Property, PropertyStatus } from "@zaisanfy/schemas";
+import { PROPERTY_SELECT, toProperty, type Property, type PropertyRow, type PropertyStatus } from "@zaisanfy/schemas";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../auth/AuthProvider";
 import { withSession } from "../components/Layout";
@@ -19,11 +19,11 @@ export default function MisPropiedades() {
   const load = useCallback(async () => {
     const { data, error } = await supabase
       .from("properties")
-      .select("*")
+      .select(PROPERTY_SELECT)
       .eq("seller_id", userId)
       .order("updated_at", { ascending: false });
     if (error) setError(error.message);
-    setRows((data as Property[]) ?? []);
+    setRows(((data as unknown as PropertyRow[]) ?? []).map(toProperty));
   }, [userId]);
 
   useEffect(() => {

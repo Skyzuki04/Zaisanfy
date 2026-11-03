@@ -6,11 +6,11 @@ insert into auth.users (id, email, raw_user_meta_data) values
   ('00000000-0000-0000-0000-00000000d002', 'visitante.b@zaisanfy.test', '{"role": "visitante"}'),
   ('00000000-0000-0000-0000-00000000d003', 'vendedor.d@zaisanfy.test', '{"role": "vendedor"}');
 
-insert into public.properties (id, seller_id, status, data) values
+insert into public.properties (id, seller_id, status, title, operation, property_type, price, state, city) values
   ('00000000-0000-0000-0000-0000000000f1', '00000000-0000-0000-0000-00000000d003', 'published',
-   '{"title": "Publicada de prueba", "propertyType": "casa", "price": 100, "location": {"state": "Jalisco", "city": "Zapopan"}}'),
+   'Publicada de prueba', 'venta', 'casa', 100, 'Jalisco', 'Zapopan'),
   ('00000000-0000-0000-0000-0000000000f2', '00000000-0000-0000-0000-00000000d003', 'draft',
-   '{"title": "Borrador de prueba", "propertyType": "casa", "price": 100, "location": {"state": "Jalisco", "city": "Zapopan"}}');
+   'Borrador de prueba', 'venta', 'casa', 100, 'Jalisco', 'Zapopan');
 
 -- Visitante A
 set local role authenticated;

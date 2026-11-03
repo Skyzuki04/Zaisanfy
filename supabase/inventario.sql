@@ -4,16 +4,26 @@ with esperado(tipo, nombre) as (
     -- tablas
     ('tabla', 'properties'), ('tabla', 'profiles'), ('tabla', 'creative_profiles'),
     ('tabla', 'creative_posts'), ('tabla', 'bookmarks'), ('tabla', 'contact_requests'),
+    ('tabla', 'property_photos'), ('tabla', 'post_images'),
+    ('tabla', 'plans'), ('tabla', 'billing_customers'), ('tabla', 'subscriptions'), ('tabla', 'payments'),
+    ('tabla', 'subscription_payments'), ('tabla', 'credit_movements'), ('tabla', 'lead_unlocks'),
+    ('tabla', 'ads'), ('tabla', 'ad_events'),
     -- tipos (enums)
     ('tipo', 'property_status'), ('tipo', 'user_role'), ('tipo', 'post_category'),
-    ('tipo', 'contact_kind'), ('tipo', 'contact_status'),
+    ('tipo', 'contact_status'), ('tipo', 'photo_kind'),
+    ('tipo', 'subscription_status'), ('tipo', 'payment_status'), ('tipo', 'credit_reason'),
+    ('tipo', 'ad_placement'), ('tipo', 'ad_event_kind'),
     -- funciones
     ('funcion', 'set_updated_at'), ('funcion', 'handle_new_user'), ('funcion', 'my_role'),
     ('funcion', 'contact_requests_before_insert'), ('funcion', 'upgrade_role'),
+    ('funcion', 'save_property'), ('funcion', 'save_post'), ('funcion', 'request_recipient'),
+    ('funcion', 'kind'), ('funcion', 'my_inbox'),
+    ('funcion', 'my_plan'), ('funcion', 'my_credits'), ('funcion', 'ad_is_live'),
     -- triggers
     ('trigger', 'properties.properties_set_updated_at'), ('trigger', 'profiles.profiles_set_updated_at'),
     ('trigger', 'creative_profiles.creative_profiles_set_updated_at'), ('trigger', 'creative_posts.creative_posts_set_updated_at'),
-    ('trigger', 'contact_requests.contact_requests_set_updated_at'), ('trigger', 'contact_requests.contact_requests_before_insert')
+    ('trigger', 'contact_requests.contact_requests_set_updated_at'), ('trigger', 'contact_requests.contact_requests_before_insert'),
+    ('trigger', 'subscriptions.subscriptions_set_updated_at'), ('trigger', 'payments.payments_set_updated_at')
 ),
 real(tipo, nombre, detalle) as (
   select 'tabla', c.relname, 'RLS ' || case when c.relrowsecurity then 'activado' else 'APAGADO' end

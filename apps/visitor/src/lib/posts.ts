@@ -1,12 +1,15 @@
 import { cache } from "react";
-import { PostCategory, type CreativePost, type CreativeProfile } from "@zaisanfy/schemas";
+import { PostCategory, POST_IMAGES_SELECT, toPost, type CreativePost, type CreativePostRow, type CreativeProfile } from "@zaisanfy/schemas";
 import { supabase } from "./supabase";
 
 export type PostWithCreative = CreativePost & {
   creative: Pick<CreativeProfile, "id" | "display_name" | "avatar_url">;
 };
 
-export const POST_SELECT = "*, creative:creative_profiles(id, display_name, avatar_url)";
+export const POST_SELECT = `*, ${POST_IMAGES_SELECT}, creative:creative_profiles(id, display_name, avatar_url)`;
+
+export const toPosts = (data: unknown): PostWithCreative[] =>
+  ((data as (CreativePostRow & Pick<PostWithCreative, "creative">)[]) ?? []).map(toPost);
 
 const isUuid = (id: string) => /^[0-9a-f-]{36}$/i.test(id);
 
@@ -18,13 +21,13 @@ export async function getCreativePosts(creativeId: string): Promise<PostWithCrea
     .eq("creative_id", creativeId)
     .order("created_at", { ascending: false })
     .limit(100);
-  return (data as PostWithCreative[]) ?? [];
+  return toPosts(data);
 }
 
 export const getPost = cache(async (id: string): Promise<PostWithCreative | null> => {
   if (!isUuid(id)) return null;
   const { data } = await supabase.from("creative_posts").select(POST_SELECT).eq("id", id).maybeSingle();
-  return (data as PostWithCreative) ?? null;
+  return data ? toPosts([data])[0] : null;
 });
 
 export const WALL_PAGE_SIZE = 12;
@@ -49,5 +52,5 @@ export async function getWall({ page, category }: WallFilters): Promise<{ posts:
   if (category) q = q.eq("category", category);
   const { data, count, error } = await q;
   if (error) return { posts: [], total: count ?? 0 };
-  return { posts: (data as PostWithCreative[]) ?? [], total: count ?? 0 };
+  return { posts: toPosts(data), total: count ?? 0 };
 }

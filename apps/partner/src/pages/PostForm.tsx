@@ -4,8 +4,12 @@ import {
   CATEGORY_LABEL,
   CreativePostInputSchema,
   MAX_POST_IMAGES,
+  POST_IMAGES_SELECT,
   PropertyType,
+  toPost,
+  toSavePostArgs,
   type CreativePost,
+  type CreativePostRow,
 } from "@zaisanfy/schemas";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../auth/AuthProvider";
@@ -38,12 +42,13 @@ export default function PostForm() {
     if (isNew) return;
     supabase
       .from("creative_posts")
-      .select("*")
+      .select(`*, ${POST_IMAGES_SELECT}`)
       .eq("id", id)
       .maybeSingle()
       .then(({ data }) => {
-        setPost((data as CreativePost) ?? null);
-        setImages((data as CreativePost | null)?.images ?? []);
+        const p = data ? (toPost(data as CreativePostRow) as CreativePost) : null;
+        setPost(p);
+        setImages(p?.images ?? []);
       });
   }, [id, isNew]);
 
@@ -102,9 +107,7 @@ export default function PostForm() {
     }
     setErrors({});
     setSaving(true);
-    const { error } = isNew
-      ? await supabase.from("creative_posts").insert({ creative_id: session!.user.id, ...parsed.data })
-      : await supabase.from("creative_posts").update(parsed.data).eq("id", id);
+    const { error } = await supabase.rpc("save_post", toSavePostArgs(isNew ? null : id!, parsed.data));
     setSaving(false);
     if (error) return setErrors({ form: error.message });
     navigate("/portafolio", { state: { notice: isNew ? "Publicación creada. Ya aparece en tu perfil y en el muro." : "Cambios guardados." } });
