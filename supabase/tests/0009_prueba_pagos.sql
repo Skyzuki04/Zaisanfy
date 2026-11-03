@@ -8,7 +8,7 @@ insert into auth.users (id, email, email_confirmed_at, raw_user_meta_data) value
 insert into public.properties (id, seller_id, status, title, operation, property_type, price, state, city) values
   ('00000000-0000-0000-0000-0000000009f1', '00000000-0000-0000-0000-00000000a901', 'published', 'Anunciada', 'venta', 'casa', 100, 'Jalisco', 'Zapopan');
 
--- Lo que haría el webhook de Stripe (como servidor)
+-- Como el webhook de Stripe
 insert into public.subscriptions (id, user_id, plan_id, status, current_period_start, current_period_end)
 values ('00000000-0000-0000-0000-0000000009a1', '00000000-0000-0000-0000-00000000a901', 'pro', 'activa', now(), now() + interval '30 days');
 insert into public.payments (id, user_id, amount_mxn, status) values
@@ -47,7 +47,7 @@ do $$ begin
   end;
 end $$;
 
--- Vendedor B no ve nada de A y su plan es Freemium
+-- Vendedor B
 select set_config('request.jwt.claims', '{"sub": "00000000-0000-0000-0000-00000000a902", "role": "authenticated"}', true);
 
 do $$ begin
@@ -56,7 +56,7 @@ do $$ begin
   if (select count(*) from public.plans) <> 3 then raise exception 'FALLA: no se ven los 3 planes'; end if;
 end $$;
 
--- Sin sesión: se ve el anuncio vigente y se cuenta la vista
+-- Sin sesión
 reset role;
 set local role anon;
 select set_config('request.jwt.claims', '{"role": "anon"}', true);

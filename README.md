@@ -76,16 +76,20 @@ Para correr **todas las pruebas de una vez**: [`supabase/tests/0000_todas_las_pr
 Las migraciones se corren **una sola vez**; las pruebas, cuantas veces quieras.
 
 Para revisar qué hay en la base sin cambiar nada: [`supabase/inventario.sql`](supabase/inventario.sql) (marca cada objeto como OK, FALTA o SOBRA).
+En Supabase → SQL Editor → Shared están guardadas **Todas_las_pruebas_SQL** e **Inventario**; las migraciones no se guardan ahí porque ya están aplicadas.
+
+Desde la 0008 la integración de Supabase con GitHub aplica sola cada migración nueva al unirla a `main` (chequeo "Supabase Preview"). Ya no se pegan a mano.
 
 Una migración nueva se agrega con el siguiente número (`0010_…`), nunca editando una que ya se corrió.
 
 ## Por dónde empezar si eres de backend
 
 1. [docs/flujos.md](docs/flujos.md): mapa por rol (visitante, cliente, vendedor, creativo, admin) con cada pantalla, botón, a dónde lleva
-   y qué tabla o política de Supabase usa. Al final está la lista de **pendientes de F3** (correo de aviso, captcha, pagos y premium, verificación, moderación).
+   y qué tabla o función de Supabase usa. Al final están los **pendientes de F3** (correo de aviso, captcha, Stripe y pay-wall, anuncios, verificación, moderación).
 2. [docs/permisos.md](docs/permisos.md): roles, quién puede hacer qué, qué pide cuenta y qué pide verificación, y los candados contra abuso.
-3. [docs/modelo-de-datos.md](docs/modelo-de-datos.md): estructura de `properties` y los esquemas Zod de `packages/schemas`.
-4. Las reglas viven en la base de datos (RLS y triggers), no solo en la app. Si algo se valida, se valida en SQL y se prueba en `supabase/tests`.
+3. [docs/modelo-de-datos.md](docs/modelo-de-datos.md): diagrama entidad-relación (3FN) de todas las tablas, incluidas las de pagos, y qué datos se calculan.
+4. Los issues `F3 · …` de GitHub: qué sigue, uno por tarea.
+5. Las reglas viven en la base de datos (RLS y triggers), no solo en la app. Si algo se valida, se valida en SQL y se prueba en `supabase/tests`.
 
 ## Reglas del equipo
 
