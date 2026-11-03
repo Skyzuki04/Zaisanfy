@@ -70,6 +70,9 @@ Cada una tiene su prueba en [`supabase/tests`](supabase/tests): se corre igual, 
 | 0006 | `0006_contact_requests.sql` | ZAI-33 básico · solicitudes de visita y cotización | `0006_prueba_solicitudes.sql` → `ZAI-33 OK` |
 | 0007 | `0007_upgrade_role.sql` | Mejora de cuenta: cliente → vendedor o creativo | `0007_prueba_mejora_de_cuenta.sql` → `MEJORA DE CUENTA OK` |
 
+Para correr **todas las pruebas de una vez**: [`supabase/tests/0000_todas_las_pruebas.sql`](supabase/tests/0000_todas_las_pruebas.sql) (termina con `TODAS LAS PRUEBAS OK`).
+Las migraciones se corren **una sola vez**; las pruebas, cuantas veces quieras.
+
 Para revisar qué hay en la base sin cambiar nada: [`supabase/inventario.sql`](supabase/inventario.sql) (marca cada objeto como OK, FALTA o SOBRA).
 
 Una migración nueva se agrega con el siguiente número (`0008_…`), nunca editando una que ya se corrió.
