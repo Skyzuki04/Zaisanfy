@@ -1,6 +1,6 @@
--- Modelo en 3FN: propiedades en columnas, fotos e imágenes en tablas propias, solicitudes sin datos derivados
+-- Modelo en 3FN
 
--- Propiedades: el detalle pasa de JSON a columnas
+-- Propiedades en columnas
 alter table public.properties
   add column title         text,
   add column description   text,
@@ -57,7 +57,7 @@ alter table public.properties
   add constraint properties_lat           check (lat is null or lat between -90 and 90),
   add constraint properties_lng           check (lng is null or lng between -180 and 180);
 
--- Fotos y 360 de cada propiedad. La foto en posición 0 es la portada.
+-- Fotos (posición 0 = portada) y 360
 create type public.photo_kind as enum ('foto', 'panorama');
 
 create table public.property_photos (
@@ -158,7 +158,7 @@ on public.post_images for all to authenticated
 using ((select public.my_role()) = 'admin')
 with check ((select public.my_role()) = 'admin');
 
--- Guardado atómico: la fila y sus fotos en una sola transacción
+-- Guardar fila y fotos juntas
 create or replace function public.save_property(
   p_id uuid, p_title text, p_description text, p_operation text, p_property_type text,
   p_price numeric, p_currency text, p_bedrooms integer, p_bathrooms numeric, p_area_m2 numeric,
@@ -252,7 +252,7 @@ revoke execute on function public.save_post from public, anon;
 grant execute on function public.save_property to authenticated;
 grant execute on function public.save_post to authenticated;
 
--- Solicitudes: el tipo, el destinatario y los datos del cliente ya no se copian
+-- Solicitudes sin datos copiados
 drop policy "El cliente y quien la recibe ven la solicitud" on public.contact_requests;
 drop policy "Quien la recibe cambia el estado" on public.contact_requests;
 
@@ -279,7 +279,7 @@ create index contact_requests_post_idx     on public.contact_requests (post_id);
 
 comment on table public.contact_requests is 'Solicitudes de visita (property_id) y de cotización (creative_id o post_id). Solo uno de los tres va lleno.';
 
--- Quién recibe la solicitud: el vendedor de la propiedad o el creativo
+-- Quién recibe la solicitud
 create or replace function public.request_recipient(p_property uuid, p_creative uuid, p_post uuid)
 returns uuid
 language sql
@@ -294,7 +294,7 @@ as $$
   );
 $$;
 
--- Tipo calculado: la app lo pide como columna "kind"
+-- Tipo calculado (select "*, kind")
 create or replace function public.kind(r public.contact_requests)
 returns text
 language sql
@@ -387,7 +387,7 @@ on public.contact_requests for update to authenticated
 using (public.request_recipient(property_id, creative_id, post_id) = (select auth.uid()))
 with check (public.request_recipient(property_id, creative_id, post_id) = (select auth.uid()));
 
--- Bandeja de quien recibe: junta la solicitud con los datos actuales del cliente
+-- Bandeja de quien recibe
 create or replace function public.my_inbox()
 returns table (
   id uuid, kind text, property_id uuid, property_title text, creative_id uuid, post_id uuid, post_title text,

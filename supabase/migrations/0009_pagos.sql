@@ -1,5 +1,4 @@
--- Pagos: planes, suscripciones, cobros, créditos, leads desbloqueados y anuncios (ZAI-32, 34 y 36)
--- Solo el servidor escribe aquí (webhook de Stripe con la service key). Cada usuario ve lo suyo.
+-- Pagos (solo el servidor escribe)
 
 create type public.subscription_status as enum ('incompleta', 'activa', 'en_prueba', 'pago_vencido', 'cancelada');
 create type public.payment_status as enum ('pendiente', 'pagado', 'fallido', 'reembolsado');
@@ -7,7 +6,7 @@ create type public.credit_reason as enum ('plan', 'desbloqueo', 'ajuste');
 create type public.ad_placement as enum ('buscador', 'muro');
 create type public.ad_event_kind as enum ('impresion', 'clic');
 
--- Planes. Precios y límites provisionales: los confirma el PO.
+-- Planes (precios provisionales)
 create table public.plans (
   id                   text primary key check (id ~ '^[a-z]+$'),
   name                 text not null unique,
@@ -26,7 +25,7 @@ insert into public.plans (id, name, price_mxn, max_published, monthly_credits, c
   ('pro',        'Pro',        499,  25,   10, true,  1),
   ('enterprise', 'Enterprise', 1499, null, 50, true,  2);
 
--- Cliente de Stripe de cada usuario
+-- Cliente de Stripe
 create table public.billing_customers (
   user_id             uuid primary key references auth.users (id) on delete cascade,
   stripe_customer_id  text not null unique,
@@ -53,7 +52,7 @@ create trigger subscriptions_set_updated_at
 before update on public.subscriptions
 for each row execute function public.set_updated_at();
 
--- Cada cobro. Lo que se pagó se sabe por quién lo referencia (suscripción, lead o anuncio).
+-- Cobros
 create table public.payments (
   id                        uuid primary key default gen_random_uuid(),
   user_id                   uuid not null references auth.users (id) on delete cascade,
@@ -70,7 +69,7 @@ create trigger payments_set_updated_at
 before update on public.payments
 for each row execute function public.set_updated_at();
 
--- Cobros mensuales de cada suscripción
+-- Cobros de cada suscripción
 create table public.subscription_payments (
   payment_id       uuid primary key references public.payments (id) on delete cascade,
   subscription_id  uuid not null references public.subscriptions (id) on delete cascade
@@ -78,7 +77,7 @@ create table public.subscription_payments (
 
 create index subscription_payments_sub_idx on public.subscription_payments (subscription_id);
 
--- Movimientos de créditos. El saldo es la suma; no se guarda aparte.
+-- Créditos (saldo = suma)
 create table public.credit_movements (
   id          uuid primary key default gen_random_uuid(),
   user_id     uuid not null references auth.users (id) on delete cascade,
@@ -89,7 +88,7 @@ create table public.credit_movements (
 
 create index credit_movements_user_idx on public.credit_movements (user_id, created_at desc);
 
--- Leads desbloqueados: con un pago o con créditos, nunca dos veces
+-- Leads desbloqueados
 create table public.lead_unlocks (
   request_id          uuid primary key references public.contact_requests (id) on delete cascade,
   payment_id          uuid unique references public.payments (id) on delete restrict,
@@ -98,7 +97,7 @@ create table public.lead_unlocks (
   check (num_nonnulls(payment_id, credit_movement_id) = 1)
 );
 
--- Anuncios pagados y sus vistas y clics
+-- Anuncios, vistas y clics
 create table public.ads (
   id           uuid primary key default gen_random_uuid(),
   property_id  uuid not null references public.properties (id) on delete cascade,
@@ -164,7 +163,7 @@ revoke execute on function public.my_credits from public, anon;
 grant execute on function public.my_plan to authenticated;
 grant execute on function public.my_credits to authenticated;
 
--- Permisos: lectura propia; escribir solo el servidor (service_role se salta RLS)
+-- Permisos
 revoke insert, update, delete on public.plans, public.billing_customers, public.subscriptions, public.payments,
   public.subscription_payments, public.lead_unlocks, public.credit_movements, public.ads from anon, authenticated;
 revoke all on public.billing_customers, public.subscriptions, public.payments, public.subscription_payments,

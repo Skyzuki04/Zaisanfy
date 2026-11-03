@@ -9,7 +9,7 @@ insert into auth.users (id, email, email_confirmed_at, raw_user_meta_data) value
 
 insert into public.creative_profiles (id, display_name) values ('00000000-0000-0000-0000-00000000a803', 'Estudio Ocho');
 
--- Vendedor A guarda una propiedad con fotos
+-- Vendedor A guarda con fotos
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub": "00000000-0000-0000-0000-00000000a801", "role": "authenticated"}', true);
 
@@ -56,7 +56,7 @@ begin
   end;
 end $$;
 
--- Sin sesión no se ven fotos de borradores
+-- Sin sesión
 reset role;
 set local role anon;
 select set_config('request.jwt.claims', '{"role": "anon"}', true);
@@ -65,7 +65,7 @@ do $$ begin
   if exists (select 1 from public.property_photos where url like 'https://x.test/%') then raise exception 'FALLA: sin sesión se ven fotos de un borrador'; end if;
 end $$;
 
--- Cotización sobre una publicación: llega al creativo
+-- Cotización sobre una publicación
 reset role;
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub": "00000000-0000-0000-0000-00000000a803", "role": "authenticated"}', true);

@@ -664,7 +664,7 @@ insert into auth.users (id, email, email_confirmed_at, raw_user_meta_data) value
 
 insert into public.creative_profiles (id, display_name) values ('00000000-0000-0000-0000-00000000a803', 'Estudio Ocho');
 
--- Vendedor A guarda una propiedad con fotos
+-- Vendedor A guarda con fotos
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub": "00000000-0000-0000-0000-00000000a801", "role": "authenticated"}', true);
 
@@ -711,7 +711,7 @@ begin
   end;
 end $$;
 
--- Sin sesión no se ven fotos de borradores
+-- Sin sesión
 reset role;
 set local role anon;
 select set_config('request.jwt.claims', '{"role": "anon"}', true);
@@ -720,7 +720,7 @@ do $$ begin
   if exists (select 1 from public.property_photos where url like 'https://x.test/%') then raise exception 'FALLA: sin sesión se ven fotos de un borrador'; end if;
 end $$;
 
--- Cotización sobre una publicación: llega al creativo
+-- Cotización sobre una publicación
 reset role;
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub": "00000000-0000-0000-0000-00000000a803", "role": "authenticated"}', true);
@@ -770,7 +770,7 @@ insert into auth.users (id, email, email_confirmed_at, raw_user_meta_data) value
 insert into public.properties (id, seller_id, status, title, operation, property_type, price, state, city) values
   ('00000000-0000-0000-0000-0000000009f1', '00000000-0000-0000-0000-00000000a901', 'published', 'Anunciada', 'venta', 'casa', 100, 'Jalisco', 'Zapopan');
 
--- Lo que haría el webhook de Stripe (como servidor)
+-- Como el webhook de Stripe
 insert into public.subscriptions (id, user_id, plan_id, status, current_period_start, current_period_end)
 values ('00000000-0000-0000-0000-0000000009a1', '00000000-0000-0000-0000-00000000a901', 'pro', 'activa', now(), now() + interval '30 days');
 insert into public.payments (id, user_id, amount_mxn, status) values
@@ -809,7 +809,7 @@ do $$ begin
   end;
 end $$;
 
--- Vendedor B no ve nada de A y su plan es Freemium
+-- Vendedor B
 select set_config('request.jwt.claims', '{"sub": "00000000-0000-0000-0000-00000000a902", "role": "authenticated"}', true);
 
 do $$ begin
@@ -818,7 +818,7 @@ do $$ begin
   if (select count(*) from public.plans) <> 3 then raise exception 'FALLA: no se ven los 3 planes'; end if;
 end $$;
 
--- Sin sesión: se ve el anuncio vigente y se cuenta la vista
+-- Sin sesión
 reset role;
 set local role anon;
 select set_config('request.jwt.claims', '{"role": "anon"}', true);
