@@ -3,7 +3,7 @@
 Plataforma PropTech para buscar propiedades con recorridos 360 y una red de creativos (arquitectos y artistas 3D).
 Proyecto de **Metodologías Ágiles · Universidad Tecmilenio**.
 
-**Equipo:** Eduardo Rivera Crespo · Ireri Guerrero Domínguez · Owen Iván Rojas Mendoza (Developer)
+**Equipo:** Eduardo Rivera Crespo (Product Owner) · Ireri Guerrero Domínguez (Scrum Master) · Owen Iván Rojas Mendoza (Developer) · Minette Bibiana Hernández Velázquez (Developer) · Damián Medina Ibarra (Developer) · Luis Martínez del Campo (Developer) 
 
 **Tablero Kanban:** Mendix Epics · proyecto "Zaisanfy" · alcance: Fase 1 (MVP) y Fase 2 (Growth).
 
