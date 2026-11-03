@@ -1,5 +1,5 @@
 import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   CATEGORY_LABEL,
   CreativePostInputSchema,
@@ -112,13 +112,20 @@ export default function PostForm() {
       : await supabase.from("creative_posts").update(parsed.data).eq("id", id);
     setSaving(false);
     if (error) return setErrors({ form: error.message });
-    navigate("/portafolio");
+    navigate("/portafolio", { state: { notice: isNew ? "Publicación creada. Ya aparece en tu perfil y en el muro." : "Cambios guardados." } });
   }
 
   if (post === undefined) return <p>Cargando…</p>;
   // RLS ya impide guardar cambios ajenos; aquí solo se evita mostrar el formulario
   if (!isNew && (post === null || post.creative_id !== session!.user.id)) {
-    return <p className="card">Esta publicación no existe o no es tuya.</p>;
+    return (
+      <div className="card empty-state">
+        <h2>Esta publicación no existe o no es tuya</h2>
+        <Link to="/portafolio" className="button primary">
+          Volver a mi portafolio
+        </Link>
+      </div>
+    );
   }
   const err = (k: string) => errors[k] && <small className="error">{errors[k]}</small>;
 

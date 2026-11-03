@@ -1,9 +1,12 @@
+import Logo from "../components/Logo";
 import { useState, type FormEvent } from "react";
 import { Navigate } from "react-router-dom";
 import { SignInSchema, SignUpSchema } from "@zaisanfy/schemas";
 import { useAuth } from "../auth/AuthProvider";
 
-/** ZAI-20 · Registro e inicio de sesión de vendedores y creativos. */
+const visitorUrl = import.meta.env.VITE_VISITOR_URL ?? "http://localhost:3000";
+
+/** ZAI-20 · Registro e inicio de sesión de vendedores y creativos. Los clientes se registran en el Escaparate. */
 export default function Login() {
   const { session, signIn, signUp } = useAuth();
   const [mode, setMode] = useState<"entrar" | "registro">("entrar");
@@ -38,8 +41,26 @@ export default function Login() {
   }
 
   return (
+    <div className="auth-split">
+      <aside className="auth-side">
+        <Logo size={40} />
+        <div>
+          <span className="eyebrow">Consola de socios</span>
+          <h2>
+            Publica, muestra y <em>conecta</em>
+          </h2>
+          <p>Sube tus propiedades con recorrido 360° o tu portafolio de renders y planos, y llega a quien busca su próximo hogar.</p>
+        </div>
+        <ul className="auth-points">
+          <li>Recorridos 360° en cada propiedad</li>
+          <li>Portafolio para arquitectos y artistas 3D</li>
+          <li>Tus datos protegidos por permisos</li>
+        </ul>
+      </aside>
     <div className="auth">
-      <h1>Zaisanfy · Consola de socios</h1>
+      <h1>
+        {mode === "entrar" ? <>Bienvenido de <em>vuelta</em></> : <>Crea tu <em>cuenta</em></>}
+      </h1>
       <div className="tabs">
         <button className={mode === "entrar" ? "active" : ""} onClick={() => setMode("entrar")} type="button">
           Iniciar sesión
@@ -58,8 +79,8 @@ export default function Login() {
             <label>
               Soy
               <select name="role" defaultValue="vendedor">
-                <option value="vendedor">Vendedor (agencia o desarrollador)</option>
-                <option value="creativo">Creativo (arquitecto o artista 3D)</option>
+                <option value="vendedor">Vendo o rento (agencia, desarrollador o dueño)</option>
+                <option value="creativo">Ofrezco servicios creativos (arquitecto, interiorista o artista 3D)</option>
               </select>
             </label>
           </>
@@ -78,6 +99,12 @@ export default function Login() {
           {mode === "entrar" ? "Entrar" : "Crear cuenta"}
         </button>
       </form>
+      <p className="muted auth-alt">
+        {mode === "registro" ? "¿Buscas casa?" : "¿Eres cliente?"}{" "}
+        <a href={`${visitorUrl}/entrar?modo=registro#zs_logout=1`}>Crea tu cuenta de cliente en el Escaparate</a>. Aquí solo se registran vendedores y creativos;
+        con la misma cuenta entras a las dos apps.
+      </p>
+    </div>
     </div>
   );
 }

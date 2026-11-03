@@ -5,7 +5,7 @@ export default function NotFound() {
     <main className="page">
       <h1>Esta propiedad no está disponible</h1>
       <p>Puede que ya no esté publicada.</p>
-      <Link href="/">Ver otras propiedades</Link>
+      <Link href="/" className="button primary">Ver otras propiedades</Link>
     </main>
   );
 }

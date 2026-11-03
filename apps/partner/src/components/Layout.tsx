@@ -1,6 +1,24 @@
-import { NavLink, Navigate, Outlet } from "react-router-dom";
+import { Link, NavLink, Navigate, Outlet } from "react-router-dom";
+import type { Session } from "@supabase/supabase-js";
 import type { UserRole } from "@zaisanfy/schemas";
 import { useAuth } from "../auth/AuthProvider";
+import Logo from "./Logo";
+
+const visitorUrl = import.meta.env.VITE_VISITOR_URL ?? "http://localhost:3000";
+
+/**
+ * Abre el Escaparate con la misma cuenta de la Consola (son orígenes distintos, cada uno guarda su sesión).
+ * Los tokens van en el hash, que no llega a ningún servidor, y el Escaparate lo borra al leerlo.
+ */
+export function withSession(e: React.MouseEvent<HTMLAnchorElement>, session: Session | null) {
+  if (!session) return;
+  const a = e.currentTarget;
+  const base = a.href.split("#")[0];
+  a.href = `${base}#zs_at=${encodeURIComponent(session.access_token)}&zs_rt=${encodeURIComponent(session.refresh_token)}`;
+  setTimeout(() => (a.href = base), 0);
+}
+
+const ROLE_LABEL: Record<UserRole, string> = { vendedor: "Vendedor", creativo: "Creativo", admin: "Admin", visitante: "Visitante" };
 
 /** Marco de la Consola: menú según el rol y protección de rutas. */
 export default function Layout() {
@@ -14,14 +32,21 @@ export default function Layout() {
   return (
     <div className="shell">
       <header className="topbar">
-        <strong>Zaisanfy · Consola</strong>
+        <span className="row"><Logo size={30} /><span className="console-tag">Consola</span></span>
         <nav>
           {(role === "vendedor" || role === "admin") && <NavLink to="/propiedades">Mis propiedades</NavLink>}
           {role === "creativo" && <NavLink to="/perfil">Mi perfil</NavLink>}
           {role === "creativo" && <NavLink to="/portafolio">Mi portafolio</NavLink>}
+          {role !== "visitante" && <NavLink to="/solicitudes">Solicitudes</NavLink>}
         </nav>
+        <a href={visitorUrl} target="_blank" rel="noreferrer" className="to-site" onClick={(e) => withSession(e, session)}>
+          Ver Escaparate ↗
+        </a>
         <span className="who">
-          {profile.full_name ?? session.user.email} · {role}
+          <span className="who-name" title={session.user.email}>
+            {profile.full_name ?? session.user.email}
+          </span>
+          <span className="role-badge">{ROLE_LABEL[role]}</span>
           <button onClick={signOut} className="link">
             Salir
           </button>
@@ -39,9 +64,12 @@ export function RequireRole({ roles, children }: { roles: UserRole[]; children: 
   const { profile } = useAuth();
   if (!profile || !roles.includes(profile.role)) {
     return (
-      <div className="card">
+      <div className="card empty-state">
         <h2>Sin acceso</h2>
-        <p>Esta sección es para: {roles.join(", ")}.</p>
+        <p className="muted">Esta sección es para: {roles.map((r) => ROLE_LABEL[r].toLowerCase()).join(", ")}.</p>
+        <Link to="/" className="button primary">
+          Ir a mi inicio
+        </Link>
       </div>
     );
   }
@@ -53,10 +81,23 @@ export function HomeRedirect() {
   const { profile } = useAuth();
   if (profile?.role === "vendedor" || profile?.role === "admin") return <Navigate to="/propiedades" replace />;
   if (profile?.role === "creativo") return <Navigate to="/perfil" replace />;
+  const { session, signOut } = useAuth();
   return (
-    <div className="card">
-      <h2>Bienvenido</h2>
-      <p>La Consola es para vendedores y creativos. Tu cuenta es de tipo "{profile?.role}".</p>
+    <div className="card empty-state">
+      <h2>
+        Tu cuenta es de <em>cliente</em>
+      </h2>
+      <p className="muted">
+        La Consola es para vendedores y creativos. Como cliente puedes ver propiedades, guardarlas en Mi Lista y contactar a vendedores desde el Escaparate.
+      </p>
+      <div className="row">
+        <a href={visitorUrl} className="button primary" onClick={(e) => withSession(e, session)}>
+          Ir al Escaparate
+        </a>
+        <button type="button" onClick={signOut}>
+          Salir y entrar con otra cuenta
+        </button>
+      </div>
     </div>
   );
 }

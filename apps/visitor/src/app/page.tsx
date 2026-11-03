@@ -1,6 +1,8 @@
 import Link from "next/link";
 import PropertyCard from "@/components/PropertyCard";
 import SearchForm from "@/components/SearchForm";
+import { orderedPhotos } from "@/lib/photos";
+import { cld } from "@/lib/cloudinary";
 import { hasFilters, parseFilters, searchProperties } from "@/lib/search";
 
 // Escaparate público (App 1) · ZAI-24: buscador con filtros.
@@ -9,14 +11,36 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
   const filters = parseFilters(await searchParams);
   const properties = await searchProperties(filters);
   const filtered = hasFilters(filters);
+  // La portada usa la foto de la primera propiedad publicada que tenga foto
+  const heroPhoto = properties.map((p) => orderedPhotos(p)[0]).find(Boolean);
 
   return (
+    <>
+      <section className={`hero ${heroPhoto ? "with-photo" : ""}`}>
+        {heroPhoto && <img className="hero-photo" src={cld(heroPhoto, 1600)} alt="" fetchPriority="high" />}
+        <div className="hero-orbit" aria-hidden="true" />
+        <div className="hero-inner">
+          <div className="hero-row">
+            <h1>
+              Encuentra tu propiedad <em>ideal</em>
+            </h1>
+            <p className="hero-lead">Recorre cada espacio en 360° antes de visitarlo e inspírate con renders y planos de creativos.</p>
+          </div>
+          <SearchForm filters={filters} />
+        </div>
+      </section>
     <main className="page">
-      <h1>Encuentra tu propiedad</h1>
-      <SearchForm filters={filters} />
-      <p className="muted" aria-live="polite">
-        {properties.length} {properties.length === 1 ? "propiedad" : "propiedades"}
-      </p>
+      <div className="section-title">
+        <div>
+          <span className="eyebrow">Propiedades</span>
+          <h2>
+            Encuentra el lugar <em>para ti</em>
+          </h2>
+        </div>
+        <p className="muted" aria-live="polite">
+          {properties.length} {properties.length === 1 ? "propiedad" : "propiedades"}
+        </p>
+      </div>
       {properties.length === 0 ? (
         <div className="card empty">
           <h2>Sin resultados</h2>
@@ -35,5 +59,6 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
         </ul>
       )}
     </main>
+    </>
   );
 }
