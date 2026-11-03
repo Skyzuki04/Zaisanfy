@@ -1,12 +1,7 @@
-/**
- * ZAI-22 · Subida directa a Cloudinary con el upload preset "unsigned".
- * La foto va del navegador a Cloudinary; en Supabase solo se guarda la URL.
- */
 const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
 const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
-// Límites del plan Free de Cloudinary
-export const MAX_BYTES = 10 * 1024 * 1024; // 10 MB por imagen
+export const MAX_BYTES = 10 * 1024 * 1024;
 export const MAX_MEGAPIXELS = 25;
 
 export async function uploadImage(file: File): Promise<string> {
@@ -22,7 +17,6 @@ export async function uploadImage(file: File): Promise<string> {
   return json.secure_url as string;
 }
 
-/** Lee el ancho y alto real de una imagen antes de subirla. */
 export function readImageSize(file: File): Promise<{ width: number; height: number }> {
   return new Promise((resolve, reject) => {
     const url = URL.createObjectURL(file);
@@ -39,7 +33,6 @@ export function readImageSize(file: File): Promise<{ width: number; height: numb
   });
 }
 
-/** Revisa tamaño y megapíxeles. Devuelve el error o null. */
 export async function checkImage(file: File): Promise<string | null> {
   if (!file.type.startsWith("image/")) return `"${file.name}" no es una imagen`;
   if (file.size > MAX_BYTES) return `"${file.name}" pesa más de 10 MB`;
@@ -48,7 +41,6 @@ export async function checkImage(file: File): Promise<string | null> {
   return null;
 }
 
-/** Una foto 360 equirectangular mide el doble de ancho que de alto (2:1). Se acepta 1 % de diferencia. */
 export async function check360(file: File): Promise<string | null> {
   const basic = await checkImage(file);
   if (basic) return basic;

@@ -1,11 +1,4 @@
--- =====================================================================
--- Inventario de la base de datos (SOLO LECTURA: no cambia nada)
--- Compara lo que hay en el esquema public con lo que crean las migraciones 0001-0007.
---   estado = 'OK'        -> existe y viene de una migración
---   estado = 'FALTA'     -> la migración lo crea pero no está en la base (falta correrla)
---   estado = 'SOBRA'     -> está en la base pero ninguna migración lo crea (revisar: prueba vieja o creado a mano)
--- Cómo usarlo: Supabase > SQL Editor > New query > pegar todo > Run.
--- =====================================================================
+-- Inventario (solo lectura): OK, FALTA o SOBRA
 with esperado(tipo, nombre) as (
   values
     -- tablas
@@ -50,11 +43,9 @@ select coalesce(r.tipo, e.tipo) as tipo,
        coalesce(r.detalle, '') as detalle
 from real r full join esperado e on e.tipo = r.tipo and e.nombre = r.nombre
 union all
--- trigger que vive en auth.users (crea el perfil al registrarse)
 select 'trigger', 'auth.users.on_auth_user_created',
        case when exists (select 1 from pg_trigger where tgname = 'on_auth_user_created') then 'OK' else 'FALTA' end, ''
 union all
--- políticas RLS (solo informativo: cuántas tiene cada tabla)
 select 'politicas', tablename, 'OK', count(*) || ' políticas: ' || string_agg(policyname, ' | ' order by policyname)
 from pg_policies where schemaname = 'public' group by tablename
 order by 3 desc, 1, 2;

@@ -3,10 +3,6 @@
 import { useAccount } from "@/lib/role";
 import ConsoleLink from "./ConsoleLink";
 
-/**
- * Accesos del dueño en su perfil público: editar el perfil o subir trabajo en la Consola.
- * Es un componente cliente para que la página siga en caché (ISR) para todos los demás.
- */
 export default function CreativeOwnerActions({ creativeId, variant = "header" }: { creativeId: string; variant?: "header" | "empty" }) {
   const { userId } = useAccount();
   if (userId !== creativeId) return null;

@@ -1,4 +1,3 @@
-/** Logo de Zaisanfy: casa con techo dorado y órbita 360°, más el nombre con "fy" en itálica. */
 export default function Logo({ size = 34, light = true }: { size?: number; light?: boolean }) {
   return (
     <span className="logo" style={{ color: light ? "#F5F2EC" : "#1A1613" }}>

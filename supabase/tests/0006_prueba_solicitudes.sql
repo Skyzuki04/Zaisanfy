@@ -1,9 +1,4 @@
--- =====================================================================
--- ZAI-33 · Prueba de solicitudes de contacto (visita y cotización)
--- Al final hace ROLLBACK: no deja datos.
--- Si todo sale bien, el resultado dice "ZAI-33 OK".
--- Requiere 0006_contact_requests.sql.
--- =====================================================================
+-- Prueba de solicitudes. Resultado: ZAI-33 OK
 begin;
 
 insert into auth.users (id, email, email_confirmed_at, raw_user_meta_data) values
@@ -22,14 +17,13 @@ insert into public.properties (id, seller_id, status, data) values
 insert into public.creative_profiles (id, display_name, specialty) values
   ('00000000-0000-0000-0000-00000000e004', 'Estudio de prueba', 'interiorismo');
 
--- ---------- Cliente A ----------
+-- Cliente A
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub": "00000000-0000-0000-0000-00000000e001", "role": "authenticated"}', true);
 
 do $$
 declare r public.contact_requests;
 begin
-  -- intenta mandarla "a nombre de otro" y a otro destinatario: la base de datos lo corrige
   insert into public.contact_requests (kind, property_id, recipient_id, requester_id, requester_name, message)
   values ('visita', '00000000-0000-0000-0000-0000000001f1', '00000000-0000-0000-0000-00000000e002',
           '00000000-0000-0000-0000-00000000e002', 'Nombre falso', 'Me interesa')
@@ -60,7 +54,6 @@ begin
   if exists (select 1 from public.contact_requests where status <> 'nueva') then raise exception 'FALLA: el cliente cambió el estado'; end if;
 end $$;
 
--- ---------- Cliente B no ve lo de A; límite de 5 por día ----------
 reset role;
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub": "00000000-0000-0000-0000-00000000e002", "role": "authenticated"}', true);
@@ -71,7 +64,6 @@ begin
   if exists (select 1 from public.contact_requests) then raise exception 'FALLA: B ve solicitudes de A'; end if;
 end $$;
 
--- B manda 5 solicitudes y el vendedor cierra cada una, para no chocar con la regla de "una abierta"
 do $$ begin
   for i in 1..5 loop
     perform set_config('request.jwt.claims', '{"sub": "00000000-0000-0000-0000-00000000e002", "role": "authenticated"}', true);
@@ -92,7 +84,7 @@ do $$ begin
   end;
 end $$;
 
--- ---------- El vendedor ve y atiende solo lo suyo ----------
+-- El vendedor ve y atiende solo lo suyo
 reset role;
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub": "00000000-0000-0000-0000-00000000e003", "role": "authenticated"}', true);
@@ -119,7 +111,7 @@ begin
   end;
 end $$;
 
--- ---------- El creativo ve su cotización ----------
+-- El creativo ve su cotización
 reset role;
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub": "00000000-0000-0000-0000-00000000e004", "role": "authenticated"}', true);
@@ -128,7 +120,7 @@ do $$ begin
   if (select count(*) from public.contact_requests) <> 1 then raise exception 'FALLA: el creativo no ve solo su cotización'; end if;
 end $$;
 
--- ---------- Correo sin confirmar ----------
+-- Correo sin confirmar
 reset role;
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub": "00000000-0000-0000-0000-00000000e005", "role": "authenticated"}', true);
@@ -142,7 +134,7 @@ do $$ begin
   end;
 end $$;
 
--- ---------- Sin sesión no hay nada ----------
+-- Sin sesión no hay nada
 reset role;
 set local role anon;
 select set_config('request.jwt.claims', '{"role": "anon"}', true);

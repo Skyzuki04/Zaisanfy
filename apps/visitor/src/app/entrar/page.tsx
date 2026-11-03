@@ -8,13 +8,6 @@ import { browserSupabase } from "@/lib/supabase-browser";
 import { useAccount } from "@/lib/role";
 import { goToConsole } from "@/components/ConsoleLink";
 
-/**
- * ZAI-31 · Registro e inicio de sesión único de Zaisanfy.
- * - Al crear cuenta se elige el tipo: cliente (visitante), vendedor o creativo. El rol viaja en options.data
- *   y la base de datos lo asigna (handle_new_user; nadie se registra como admin).
- * - Después de entrar: el cliente regresa a `next` (o al inicio); vendedor y creativo cruzan a su Consola.
- * - Si llegó con `next` (p. ej. desde "Contactar al vendedor"), todos regresan a esa página.
- */
 export default function EntrarPage() {
   return (
     <Suspense>
@@ -58,7 +51,7 @@ function Entrar() {
   const router = useRouter();
   const params = useSearchParams();
   const raw = params.get("next");
-  const next = raw && raw.startsWith("/") && !raw.startsWith("//") ? raw : null; // solo rutas internas
+  const next = raw && raw.startsWith("/") && !raw.startsWith("//") ? raw : null;
   const preset = params.get("tipo");
   const { ready, userId, role } = useAccount();
   const [mode, setMode] = useState<"entrar" | "registro">(params.get("modo") === "registro" || preset ? "registro" : "entrar");
@@ -68,7 +61,6 @@ function Entrar() {
   const [busy, setBusy] = useState(false);
   const isSocio = role === "vendedor" || role === "creativo" || role === "admin";
 
-  // Ya con sesión: el cliente (o quien venía de una página concreta) regresa; el socio cruza a su Consola.
   useEffect(() => {
     if (!ready || !userId || !role) return;
     if (next || !isSocio) {
@@ -109,7 +101,6 @@ function Entrar() {
     }
   }
 
-  // Socio con sesión y sin página a la cual regresar: aviso antes de cruzar
   if (ready && userId && isSocio && !next) {
     return (
       <main className="page auth">

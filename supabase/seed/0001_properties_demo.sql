@@ -1,11 +1,4 @@
--- =====================================================================
--- ZAI-19 · Datos de prueba: 3 propiedades
--- Antes de correrlo: Supabase > Authentication > Users > Add user
--- (crea un usuario de prueba, por ejemplo vendedor.demo@zaisanfy.test).
--- Las propiedades se asignan al primer usuario que exista.
--- Se puede correr varias veces: si una propiedad de prueba ya existe, no se vuelve a crear.
--- =====================================================================
-
+-- Datos demo: 3 propiedades
 insert into public.properties (seller_id, status, data)
 select u.id, v.status::public.property_status, v.data::jsonb
 from (select id from auth.users order by created_at limit 1) as u,

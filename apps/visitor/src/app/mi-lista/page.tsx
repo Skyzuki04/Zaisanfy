@@ -7,10 +7,6 @@ import PropertyCard from "@/components/PropertyCard";
 import { browserSupabase } from "@/lib/supabase-browser";
 import { toggleBookmark, useMiLista } from "@/lib/bookmarks";
 
-/**
- * ZAI-31 · RF-VIS-04 · "Mi Lista": propiedades guardadas por el visitante.
- * RLS: cada quien ve solo su lista. Si una propiedad ya no está publicada, se avisa y se puede quitar.
- */
 type Row = { property_id: string; created_at: string; property: Property | null };
 
 export default function MiListaPage() {
@@ -46,7 +42,6 @@ export default function MiListaPage() {
     );
   }
 
-  // Lo que se quita con el corazón desaparece al momento
   const visible = (rows ?? []).filter((r) => ids.has(r.property_id));
 
   return (

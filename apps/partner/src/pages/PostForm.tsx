@@ -11,11 +11,6 @@ import { supabase } from "../lib/supabase";
 import { useAuth } from "../auth/AuthProvider";
 import { checkImage, uploadImage } from "../lib/cloudinary";
 
-/**
- * ZAI-28 · RF-CRE-01 · Crear o editar una publicación del portafolio.
- * Las imágenes suben directo a Cloudinary; en creative_posts solo se guardan las URLs.
- * La primera imagen es la portada.
- */
 type Pending = { id: string; name: string; preview: string };
 
 const TYPE_LABEL: Record<PropertyType, string> = {
@@ -116,7 +111,6 @@ export default function PostForm() {
   }
 
   if (post === undefined) return <p>Cargando…</p>;
-  // RLS ya impide guardar cambios ajenos; aquí solo se evita mostrar el formulario
   if (!isNew && (post === null || post.creative_id !== session!.user.id)) {
     return (
       <div className="card empty-state">

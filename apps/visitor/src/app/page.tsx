@@ -5,13 +5,10 @@ import { orderedPhotos } from "@/lib/photos";
 import { cld } from "@/lib/cloudinary";
 import { hasFilters, parseFilters, searchProperties } from "@/lib/search";
 
-// Escaparate público (App 1) · ZAI-24: buscador con filtros.
-// Solo aparecen propiedades publicadas (filtro explícito + RLS de ZAI-20).
 export default async function Home({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const filters = parseFilters(await searchParams);
   const properties = await searchProperties(filters);
   const filtered = hasFilters(filters);
-  // La portada usa la foto de la primera propiedad publicada que tenga foto
   const heroPhoto = properties.map((p) => orderedPhotos(p)[0]).find(Boolean);
 
   return (

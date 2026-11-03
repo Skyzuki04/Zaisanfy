@@ -4,13 +4,11 @@ import { useEffect, useState } from "react";
 import { browserSupabase } from "./supabase-browser";
 import { useMiLista } from "./bookmarks";
 
-/** Dirección de la Consola de socios (App 2). */
 export const PARTNER_URL = process.env.NEXT_PUBLIC_PARTNER_URL ?? "http://localhost:5173";
 
 type Info = { role: string | null; name: string | null };
 const infos = new Map<string, Promise<Info>>();
 
-/** Usuario con sesión, su rol y su nombre (profiles), para el menú de cuenta y los accesos a la Consola. Una consulta por usuario. */
 export function useAccount() {
   const { ready, session } = useMiLista();
   const userId = session?.user.id ?? null;
@@ -40,7 +38,6 @@ export function useAccount() {
   return { ready, userId, email, name, role, isSocio: role === "vendedor" || role === "creativo" || role === "admin" };
 }
 
-/** Olvida el rol guardado (p. ej. después de mejorar la cuenta) para volver a leerlo. */
 export function forgetAccount(userId: string) {
   infos.delete(userId);
 }

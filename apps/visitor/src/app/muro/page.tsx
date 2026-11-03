@@ -5,7 +5,6 @@ import PostCard from "@/components/PostCard";
 import { getWall, parseWallFilters, WALL_PAGE_SIZE, type WallFilters } from "@/lib/posts";
 import { SITE_URL } from "@/lib/site";
 
-// ZAI-29 · FEED-01 · Muro de inspiración: renders, planos e ideas de los creativos.
 export const metadata: Metadata = {
   title: "Muro de inspiración · Zaisanfy",
   description: "Renders, planos e ideas de arquitectos y creativos para inspirar tu próxima casa.",
@@ -14,7 +13,6 @@ export const metadata: Metadata = {
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 
-/** Arma el enlace conservando el filtro (los filtros viven en la URL). */
 function wallHref({ page, category }: WallFilters) {
   const sp = new URLSearchParams();
   if (category) sp.set("categoria", category);

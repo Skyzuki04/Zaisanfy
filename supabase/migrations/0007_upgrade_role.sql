@@ -1,15 +1,4 @@
--- =====================================================================
--- Mejora de cuenta: un cliente (visitante) se vuelve vendedor o creativo
--- - Solo se permite visitante -> vendedor o visitante -> creativo.
--- - Nunca admin y nunca bajar de rol (ni cambiar de vendedor a creativo).
--- - El usuario sigue sin poder editar la columna role directamente (0002):
---   este RPC es la única puerta y valida todo en la base de datos.
--- Requiere 0002_profiles_y_permisos.sql.
---
--- Cómo usarlo: Supabase > SQL Editor > New query > pegar todo > Run.
--- Desde la app: supabase.rpc('upgrade_role', { new_role: 'vendedor' })
--- =====================================================================
-
+-- Mejora de cuenta (visitante a vendedor o creativo)
 create or replace function public.upgrade_role(new_role public.user_role)
 returns public.user_role
 language plpgsql

@@ -3,7 +3,6 @@ import { CATEGORY_LABEL } from "@zaisanfy/schemas";
 import type { PostWithCreative } from "@/lib/posts";
 import { cld } from "@/lib/cloudinary";
 
-/** Tarjeta de un render, plano o idea. En el muro muestra quién lo subió con enlace a su perfil. */
 export default function PostCard({ post, showCreative = true }: { post: PostWithCreative; showCreative?: boolean }) {
   return (
     <li className="card post-card">

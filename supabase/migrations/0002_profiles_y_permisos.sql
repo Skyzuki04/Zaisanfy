@@ -1,20 +1,6 @@
--- =====================================================================
--- ZAI-20 · RNF-SEC-01 · Registro, inicio de sesión y permisos por rol
--- - Cada usuario de Supabase Auth tiene un perfil con su rol.
--- - El perfil se crea solo al registrarse (trigger en auth.users).
--- - Políticas RLS en properties:
---     visitante (sin sesión o con sesión) -> ve solo las publicadas
---     vendedor -> ve, crea, edita y borra SOLO sus propiedades
---     admin    -> ve y edita todo
--- Requiere 0001_properties.sql.
---
--- Cómo usarlo: Supabase > SQL Editor > New query > pegar todo > Run.
--- =====================================================================
-
--- 1) Roles de la plataforma (deben coincidir con UserRole en packages/schemas)
+-- Perfiles, roles y permisos
 create type public.user_role as enum ('visitante', 'vendedor', 'creativo', 'admin');
 
--- 2) Perfil de cada usuario (1 a 1 con auth.users)
 create table public.profiles (
   id          uuid primary key references auth.users (id) on delete cascade,
   role        public.user_role not null default 'visitante',
@@ -30,9 +16,7 @@ create trigger profiles_set_updated_at
 before update on public.profiles
 for each row execute function public.set_updated_at();
 
--- 3) Al registrarse se crea el perfil.
---    La app manda el rol en options.data.role de supabase.auth.signUp().
---    Solo se aceptan visitante, vendedor o creativo: nadie se registra como admin.
+-- Al registrarse se crea el perfil.
 create or replace function public.handle_new_user()
 returns trigger
 language plpgsql
@@ -58,8 +42,6 @@ create trigger on_auth_user_created
 after insert on auth.users
 for each row execute function public.handle_new_user();
 
--- 4) Usuarios que ya existían (por ejemplo vendedor.demo@zaisanfy.test):
---    si ya tiene propiedades es vendedor; si no, visitante.
 insert into public.profiles (id, role)
 select u.id,
        case when exists (select 1 from public.properties p where p.seller_id = u.id)
@@ -68,8 +50,6 @@ select u.id,
 from auth.users u
 where not exists (select 1 from public.profiles pr where pr.id = u.id);
 
--- 5) Rol del usuario con sesión. security definer para que las políticas
---    puedan leer profiles sin chocar con el RLS de profiles.
 create or replace function public.my_role()
 returns public.user_role
 language sql
@@ -80,11 +60,10 @@ as $$
   select role from public.profiles where id = auth.uid();
 $$;
 
--- 6) El usuario puede cambiar su nombre, pero no su rol.
 revoke update on public.profiles from anon, authenticated;
 grant update (full_name) on public.profiles to authenticated;
 
--- 7) Políticas de profiles
+-- Políticas de profiles
 alter table public.profiles enable row level security;
 
 create policy "Cada quien ve su perfil"
@@ -101,7 +80,6 @@ on public.profiles for all to authenticated
 using ((select public.my_role()) = 'admin')
 with check ((select public.my_role()) = 'admin');
 
--- 8) Políticas de properties (RLS ya estaba activado en 0001)
 create policy "Todos ven las propiedades publicadas"
 on public.properties for select to anon, authenticated
 using (status = 'published');

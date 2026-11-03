@@ -2,7 +2,6 @@ import Link from "next/link";
 import AccountLinks from "./AccountLinks";
 import Logo from "./Logo";
 
-/** Menú del Escaparate. */
 export default function SiteHeader() {
   return (
     <div className="header-wrap">

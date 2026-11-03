@@ -1,14 +1,5 @@
 import { z } from "zod";
 
-/**
- * ZAI-33 (versión básica) · Solicitudes de contacto
- *
- * - visita: el cliente pide visitar una propiedad; le llega al vendedor.
- * - cotizacion: el cliente pide una cotización a un creativo.
- * Quién la recibe, el nombre y el correo del cliente los pone la base de datos (trigger), no la app.
- */
-
-// Deben coincidir con los enums contact_kind y contact_status de SQL.
 export const ContactKind = z.enum(["visita", "cotizacion"]);
 export type ContactKind = z.infer<typeof ContactKind>;
 
@@ -30,7 +21,6 @@ export const CONTACT_KIND_LABEL: Record<ContactKind, string> = {
 const optionalText = (max: number, msg: string) =>
   z.preprocess((v) => (typeof v === "string" && v.trim() === "" ? null : typeof v === "string" ? v.trim() : v), z.string().max(max, msg).nullable());
 
-/** Formulario que llena el cliente. */
 export const ContactRequestInputSchema = z
   .object({
     kind: ContactKind,
@@ -50,7 +40,6 @@ export const ContactRequestInputSchema = z
   });
 export type ContactRequestInput = z.infer<typeof ContactRequestInputSchema>;
 
-/** Fila de contact_requests, tal como la devuelve Supabase. */
 export const ContactRequestSchema = z.object({
   id: z.string().uuid(),
   kind: ContactKind,

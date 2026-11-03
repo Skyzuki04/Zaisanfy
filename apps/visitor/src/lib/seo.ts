@@ -5,10 +5,6 @@ import { TYPE_LABEL } from "./format";
 import { orderedPhotos } from "./properties";
 import { cld } from "./cloudinary";
 
-/**
- * ZAI-25 · RNF-SEO-01 · Datos estructurados (Schema.org) de una propiedad.
- * RealEstateListing describe el anuncio; la propiedad va en "about" con su dirección y medidas.
- */
 const RESIDENCE_TYPE: Record<Property["data"]["propertyType"], string> = {
   casa: "SingleFamilyResidence",
   departamento: "Apartment",
@@ -60,7 +56,6 @@ export function propertyJsonLd(p: Property) {
     residence.numberOfBathroomsTotal = d.bathrooms;
   }
   if (d.areaM2) {
-    // floorSize solo existe en viviendas (Accommodation); en Place la superficie va como additionalProperty
     if (residence["@type"] === "Place") {
       residence.additionalProperty = { "@type": "PropertyValue", name: "Superficie", value: d.areaM2, unitCode: "MTK" };
     } else {
@@ -100,14 +95,10 @@ export function propertyJsonLd(p: Property) {
   ];
 }
 
-/** JSON seguro para <script type="application/ld+json"> (evita cerrar la etiqueta con "</script>"). */
 export function jsonLdString(data: unknown) {
   return JSON.stringify(data).replace(/</g, "\\u003c");
 }
 
-/**
- * ZAI-28 · RNF-SEO-01 · Datos estructurados de un render, plano o idea (VisualArtwork).
- */
 const ARTFORM: Record<CreativePost["category"], string> = {
   render: "Render 3D",
   plano: "Plano arquitectónico",

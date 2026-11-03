@@ -6,10 +6,6 @@ import Logo from "./Logo";
 
 const visitorUrl = import.meta.env.VITE_VISITOR_URL ?? "http://localhost:3000";
 
-/**
- * Abre el Escaparate con la misma cuenta de la Consola (son orígenes distintos, cada uno guarda su sesión).
- * Los tokens van en el hash, que no llega a ningún servidor, y el Escaparate lo borra al leerlo.
- */
 export function withSession(e: React.MouseEvent<HTMLAnchorElement>, session: Session | null) {
   if (!session) return;
   const a = e.currentTarget;
@@ -20,7 +16,6 @@ export function withSession(e: React.MouseEvent<HTMLAnchorElement>, session: Ses
 
 const ROLE_LABEL: Record<UserRole, string> = { vendedor: "Vendedor", creativo: "Creativo", admin: "Admin", visitante: "Visitante" };
 
-/** Marco de la Consola: menú según el rol y protección de rutas. */
 export default function Layout() {
   const { session, profile, loading, signOut } = useAuth();
 
@@ -59,7 +54,6 @@ export default function Layout() {
   );
 }
 
-/** Deja pasar solo a los roles indicados. */
 export function RequireRole({ roles, children }: { roles: UserRole[]; children: React.ReactNode }) {
   const { profile } = useAuth();
   if (!profile || !roles.includes(profile.role)) {
@@ -76,7 +70,6 @@ export function RequireRole({ roles, children }: { roles: UserRole[]; children: 
   return <>{children}</>;
 }
 
-/** Página de inicio según el rol. */
 export function HomeRedirect() {
   const { profile } = useAuth();
   if (profile?.role === "vendedor" || profile?.role === "admin") return <Navigate to="/propiedades" replace />;

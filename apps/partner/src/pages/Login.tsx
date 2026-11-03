@@ -6,7 +6,6 @@ import { useAuth } from "../auth/AuthProvider";
 
 const visitorUrl = import.meta.env.VITE_VISITOR_URL ?? "http://localhost:3000";
 
-/** ZAI-20 · Registro e inicio de sesión de vendedores y creativos. Los clientes se registran en el Escaparate. */
 export default function Login() {
   const { session, signIn, signUp } = useAuth();
   const [mode, setMode] = useState<"entrar" | "registro">("entrar");

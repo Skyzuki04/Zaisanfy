@@ -2,7 +2,6 @@ import Link from "next/link";
 import type { Filters } from "@/lib/search";
 import { TYPE_LABEL } from "@/lib/format";
 
-/** ZAI-24 · Formulario de filtros. Usa GET, así los filtros quedan en la URL. */
 export default function SearchForm({ filters }: { filters: Filters }) {
   return (
     <form method="get" action="/" className="card search" role="search">

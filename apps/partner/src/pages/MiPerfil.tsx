@@ -6,10 +6,6 @@ import { useAuth } from "../auth/AuthProvider";
 import { withSession } from "../components/Layout";
 import { checkImage, uploadImage } from "../lib/cloudinary";
 
-/**
- * ZAI-27 · RF-CRE-01 · "Mi perfil" del creativo.
- * Crea o edita su fila en creative_profiles (RLS: solo el dueño con rol creativo).
- */
 const visitorUrl = import.meta.env.VITE_VISITOR_URL ?? "http://localhost:3000";
 const blank = (v: FormDataEntryValue | null) => (v === null || String(v).trim() === "" ? null : String(v).trim());
 

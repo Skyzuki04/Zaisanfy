@@ -3,10 +3,6 @@ import type { Session } from "@supabase/supabase-js";
 import type { SignIn, SignUp, UserRole } from "@zaisanfy/schemas";
 import { supabase } from "../lib/supabase";
 
-/**
- * ZAI-20 / ZAI-21 · Sesión del usuario en la Consola.
- * El rol sale de public.profiles (lo crea el trigger handle_new_user al registrarse).
- */
 type Profile = { id: string; role: UserRole; full_name: string | null };
 
 type AuthState = {
@@ -25,12 +21,6 @@ async function loadProfile(userId: string): Promise<Profile | null> {
   return data as Profile | null;
 }
 
-/**
- * Traspaso de sesión desde el Escaparate (otro origen, otra sesión guardada).
- * Si el enlace trae #zs_at=…&zs_rt=…, esa cuenta reemplaza a la que hubiera aquí,
- * y el hash se borra de la barra para que los tokens no queden en el historial.
- * Con #zs_logout=1 (el Escaparate no tenía sesión) se cierra también la de aquí.
- */
 async function adoptHandoff() {
   const hash = new URLSearchParams(window.location.hash.slice(1));
   if (hash.get("zs_logout")) {
@@ -62,7 +52,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
     const { data: sub } = supabase.auth.onAuthStateChange((_event, newSession) => {
       setSession(newSession);
-      // No se llama a Supabase dentro del callback (lo recomienda supabase-js); se hace en el siguiente tick.
       setTimeout(async () => setProfile(newSession ? await loadProfile(newSession.user.id) : null), 0);
     });
     return () => sub.subscription.unsubscribe();

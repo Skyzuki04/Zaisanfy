@@ -4,10 +4,6 @@ import { CONTACT_KIND_LABEL, CONTACT_STATUS_LABEL, ContactStatus, type ContactRe
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../auth/AuthProvider";
 
-/**
- * ZAI-33 (básico) · Bandeja de solicitudes del vendedor (visitas) y del creativo (cotizaciones).
- * RLS: solo se ven las que le llegaron (recipient_id) y solo se puede cambiar el estado.
- */
 type Row = ContactRequest & {
   property: { id: string; data: { title: string } } | null;
   post: { id: string; title: string } | null;

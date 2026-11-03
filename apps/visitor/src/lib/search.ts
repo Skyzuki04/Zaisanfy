@@ -2,10 +2,6 @@ import type { Property } from "@zaisanfy/schemas";
 import { PropertyType, Operation } from "@zaisanfy/schemas";
 import { supabase } from "./supabase";
 
-/**
- * ZAI-24 · RF-VIS-01 · Buscador por ubicación, precio y tipo.
- * Los filtros viven en la URL (?ubicacion=&tipo=&operacion=&min=&max=) para poder compartir la búsqueda.
- */
 export type Filters = {
   ubicacion?: string;
   tipo?: PropertyType;
@@ -22,12 +18,10 @@ const money = (v: string | undefined) => {
   return Number.isFinite(n) && n >= 0 ? n : undefined;
 };
 
-/** Lee y limpia los filtros de la URL. Lo que no es válido se ignora. */
 export function parseFilters(params: Params): Filters {
   const tipo = PropertyType.safeParse(one(params.tipo));
   const operacion = Operation.safeParse(one(params.operacion));
   return {
-    // Se quitan caracteres que tienen significado especial en los filtros de PostgREST
     ubicacion: one(params.ubicacion)?.replace(/[,()*%\\.:]/g, " ").trim().slice(0, 60) || undefined,
     tipo: tipo.success ? tipo.data : undefined,
     operacion: operacion.success ? operacion.data : undefined,
@@ -54,7 +48,6 @@ export async function searchProperties(f: Filters): Promise<Property[]> {
   }
   if (f.tipo) q = q.eq("data->>propertyType", f.tipo);
   if (f.operacion) q = q.eq("data->>operation", f.operacion);
-  // data->price es número dentro del JSONB: la comparación es numérica
   if (f.min !== undefined) q = q.gte("data->price", f.min);
   if (f.max !== undefined) q = q.lte("data->price", f.max);
   const { data, error } = await q.order("created_at", { ascending: false }).limit(60);
