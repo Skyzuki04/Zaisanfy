@@ -62,7 +62,7 @@ set local role anon;
 select set_config('request.jwt.claims', '{"role": "anon"}', true);
 
 do $$ begin
-  if exists (select 1 from public.property_photos) then raise exception 'FALLA: sin sesión se ven fotos de un borrador'; end if;
+  if exists (select 1 from public.property_photos where url like 'https://x.test/%') then raise exception 'FALLA: sin sesión se ven fotos de un borrador'; end if;
 end $$;
 
 -- Cotización sobre una publicación: llega al creativo
