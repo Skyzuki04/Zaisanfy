@@ -71,6 +71,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         password,
         options: { data: { role, full_name } },
       });
+      // Con confirmación de correo, Supabase responde sin error y con identities vacío si el correo ya existe
+      if (error?.message === "User already registered" || data.user?.identities?.length === 0) {
+        return { error: "Ese correo ya tiene una cuenta. Inicia sesión.", needsConfirmation: false };
+      }
       if (error) return { error: error.message, needsConfirmation: false };
       return { error: null, needsConfirmation: !data.session };
     },

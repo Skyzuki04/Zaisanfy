@@ -33,7 +33,7 @@ export const PropertyDataSchema = z.object({
   propertyType: PropertyType,
   price: z.number().positive("El precio debe ser mayor a 0"),
   currency: Currency.default("MXN"),
-  bedrooms: z.number().int().min(0).default(0),
+  bedrooms: z.number().int().min(0, "Las recámaras no pueden ser negativas").default(0),
   bathrooms: z.number().min(0).default(0),
   areaM2: z.number().positive().optional(),
   location: LocationSchema,
