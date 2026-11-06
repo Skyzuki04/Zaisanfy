@@ -90,7 +90,9 @@ function Entrar() {
         const { email, password, full_name, role } = parsed.data;
         const back = `${window.location.origin}/entrar${next ? `?next=${encodeURIComponent(next)}` : ""}`;
         const { data, error } = await sb.auth.signUp({ email, password, options: { data: { role, full_name }, emailRedirectTo: back } });
-        if (error) setError(error.message);
+        // Con confirmación de correo, Supabase responde sin error y con identities vacío si el correo ya existe
+        if (error?.message === "User already registered" || data.user?.identities?.length === 0) setError("Ese correo ya tiene una cuenta. Inicia sesión.");
+        else if (error) setError(error.message);
         else if (!data.session) {
           setNotice("Te mandamos un correo para confirmar tu cuenta. Ábrelo, confirma y después inicia sesión aquí.");
           setMode("entrar");
