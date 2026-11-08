@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { PROPERTY_SELECT, toProperty, type Property, type PropertyRow } from "@zaisanfy/schemas";
 import PropertyCard from "@/components/PropertyCard";
+import RoutePlanner from "@/components/RoutePlanner";
 import { browserSupabase } from "@/lib/supabase-browser";
 import { toggleBookmark, useMiLista } from "@/lib/bookmarks";
 
@@ -43,6 +44,7 @@ export default function MiListaPage() {
   }
 
   const visible = (rows ?? []).filter((r) => ids.has(r.property_id));
+  const available = visible.flatMap((r) => (r.property ? [r.property] : []));
 
   return (
     <main className="page">
@@ -63,6 +65,7 @@ export default function MiListaPage() {
           <p className="muted" aria-live="polite">
             {visible.length} {visible.length === 1 ? "propiedad guardada" : "propiedades guardadas"}
           </p>
+          {available.length > 0 && <RoutePlanner properties={available} accessToken={session.access_token} />}
           <ul className="cards">
             {visible.map((r) =>
               r.property ? (

@@ -67,6 +67,7 @@ Todo lo anterior, más:
 | Menú | Mi Lista (n) · menú de cuenta (inicial y nombre): Mi Lista, Mis solicitudes, **Quiero vender o rentar**, **Ofrecer mis servicios creativos**, Salir | `/mi-lista` · `/mis-solicitudes` · Consola · cierra sesión | `upgrade_role` RPC (no ve botón de Consola mientras sea cliente) |
 | Corazón (cualquier tarjeta o detalle) | Guardar / quitar | se queda | `bookmarks` insert/delete (solo publicadas, solo lo suyo) |
 | Mi Lista `/mi-lista` | Tarjetas · quitar · "Quitar de la lista" si ya no está publicada · vacío: Buscar propiedades | `/propiedad/[id]` · `/` | `bookmarks` + `properties` |
+| Mi Lista · Planear ruta de visitas (RF-VIS-05) | Punto de salida (mi ubicación o una dirección) · elegir hasta 10 propiedades · Calcular ruta más rápida → orden, tiempo y distancia total · **Abrir ruta en Google Maps** | Google Maps (pestaña nueva) | `POST /api/ruta` (con sesión): Google Routes `computeRouteMatrix` + orden exacto; sin `GOOGLE_MAPS_API_KEY`, estimado en línea recta |
 | Propiedad → Contactar | Formulario (comprar/rentar, horario, teléfono, mensaje) → Enviar · Cancelar | confirmación con **Ver mis solicitudes** / **Seguir viendo propiedades** | `contact_requests` insert (trigger `contact_requests_before_insert`) |
 | Creativo / publicación → Cotizar | Igual; desde una publicación se guarda solo `post_id` | confirmación con **Ver mis solicitudes** / **Seguir en el muro** | `contact_requests` insert |
 | Mis solicitudes `/mis-solicitudes` | Cada solicitud con su estado · enlace a la propiedad o creativo · vacío: Ver propiedades / Ver creativos | `/propiedad/[id]` · `/creativos/[id]` · `/` · `/muro` | `contact_requests` select ("El cliente y quien la recibe ven la solicitud") |
@@ -113,7 +114,7 @@ Puede ver todas las solicitudes por la política "Admin ve todas las solicitudes
 | Pagos y suscripciones (ZAI-32) | Página de planes con Stripe Checkout y webhook en una Edge Function | **La base ya está (0009).** El webhook, con la service key, escribe en `billing_customers`, `subscriptions`, `payments` y `subscription_payments`, y suma créditos del plan en `credit_movements` (`reason = plan`). Las apps leen `plans`, `my_plan()` y `my_credits()` |
 | Pay-wall y desbloqueo de leads (ZAI-33/34) | Ocultar el contacto del cliente en cotizaciones hasta desbloquear | Tablas `lead_unlocks` y `credit_movements` listas. Falta: que `my_inbox()` devuelva correo y teléfono solo si hay fila en `lead_unlocks`, y la Edge Function que cobra (pago o créditos) e inserta el desbloqueo |
 | Límites por plan | Aplicar `plans.max_published` al publicar | Un trigger en `properties` que compare con `my_plan()` |
-| Anuncios (ZAI-36) | Compra del anuncio y espacio "Patrocinado" | Tablas `ads` y `ad_events` listas; el anuncio se ve solo si `ad_is_live()`. La app registra vistas y clics en `ad_events` |
+| Anuncios (ZAI-36) | Compra del anuncio (Stripe) | Hecho en ADS-01: tarjeta "Patrocinado" en el buscador y el muro, vistas y clics en `ad_events`, y la pestaña **Mis anuncios** de la Consola (`my_ad_stats()`). Falta: la Edge Function que cobra e inserta la fila en `ads` |
 | Verificación de vendedores | Teléfono por SMS y/o revisión manual antes de publicar | Bandera `verified` en `profiles`, solo la cambia admin o el servidor |
 | WhatsApp del vendedor para el cliente | Mostrar el WhatsApp del vendedor al cliente después de enviar la solicitud | Hoy el vendedor contacta al cliente; falta un campo de contacto del vendedor y exponerlo solo al solicitante |
 | Reportar y moderar | Botón "Reportar" y pantalla de admin para ocultar (`hidden`) | Tabla `reports` con límite por usuario |
@@ -122,5 +123,5 @@ Puede ver todas las solicitudes por la política "Admin ve todas las solicitudes
 
 ## Migraciones (aplicar en orden en el SQL Editor)
 
-`0001_properties` → `0002_profiles_y_permisos` → `0003_creative_profiles` → `0004_creative_posts` → `0005_bookmarks` → `0006_contact_requests` → `0007_upgrade_role` → `0008_tercera_forma_normal` → `0009_pagos`.
+`0001_properties` → `0002_profiles_y_permisos` → `0003_creative_profiles` → `0004_creative_posts` → `0005_bookmarks` → `0006_contact_requests` → `0007_upgrade_role` → `0008_tercera_forma_normal` → `0009_pagos` → `0010_anuncios`.
 Cada una tiene su prueba en `supabase/tests/` que termina con `… OK` y no deja datos.

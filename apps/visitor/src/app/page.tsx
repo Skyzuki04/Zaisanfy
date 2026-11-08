@@ -4,10 +4,15 @@ import SearchForm from "@/components/SearchForm";
 import { orderedPhotos } from "@/lib/photos";
 import { cld } from "@/lib/cloudinary";
 import { hasFilters, parseFilters, searchProperties } from "@/lib/search";
+import { getSponsored } from "@/lib/ads";
 
 export default async function Home({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const filters = parseFilters(await searchParams);
-  const properties = await searchProperties(filters);
+  const [found, sponsored] = await Promise.all([searchProperties(filters), getSponsored("buscador", 3, filters)]);
+  // El anuncio va primero y no se repite abajo
+  const sponsoredIds = new Set(sponsored.map((s) => s.property.id));
+  const organic = found.filter((p) => !sponsoredIds.has(p.id));
+  const properties = [...sponsored.map((s) => s.property), ...organic];
   const filtered = hasFilters(filters);
   const heroPhoto = properties.map((p) => orderedPhotos(p)[0]).find(Boolean);
 
@@ -50,7 +55,10 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
         </div>
       ) : (
         <ul className="cards">
-          {properties.map((p) => (
+          {sponsored.map((s) => (
+            <PropertyCard key={`ad-${s.adId}`} property={s.property} adId={s.adId} />
+          ))}
+          {organic.map((p) => (
             <PropertyCard key={p.id} property={p} />
           ))}
         </ul>

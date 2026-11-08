@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { CATEGORY_LABEL, PostCategory } from "@zaisanfy/schemas";
 import PostCard from "@/components/PostCard";
+import PropertyCard from "@/components/PropertyCard";
+import { getSponsored } from "@/lib/ads";
 import { getWall, parseWallFilters, WALL_PAGE_SIZE, type WallFilters } from "@/lib/posts";
 import { SITE_URL } from "@/lib/site";
 
@@ -10,6 +12,9 @@ export const metadata: Metadata = {
   description: "Renders, planos e ideas de arquitectos y creativos para inspirar tu próxima casa.",
   alternates: { canonical: `${SITE_URL}/muro` },
 };
+
+// Lugares del muro donde va un anuncio (después de la 3.ª y la 9.ª publicación)
+const AD_SLOTS = [3, 9];
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 
@@ -23,7 +28,7 @@ function wallHref({ page, category }: WallFilters) {
 
 export default async function Muro({ searchParams }: Props) {
   const filters = parseWallFilters(await searchParams);
-  const { posts, total } = await getWall(filters);
+  const [{ posts, total }, sponsored] = await Promise.all([getWall(filters), getSponsored("muro", AD_SLOTS.length)]);
   const pages = Math.max(1, Math.ceil(total / WALL_PAGE_SIZE));
 
   return (
@@ -52,8 +57,16 @@ export default async function Muro({ searchParams }: Props) {
         </div>
       ) : (
         <ul className="cards posts">
-          {posts.map((p) => (
-            <PostCard key={p.id} post={p} />
+          {posts.map((p, i) => {
+            const slot = AD_SLOTS.indexOf(i);
+            const ad = slot >= 0 ? sponsored[slot] : undefined;
+            return [
+              ad && <PropertyCard key={`ad-${ad.adId}`} property={ad.property} adId={ad.adId} />,
+              <PostCard key={p.id} post={p} />,
+            ];
+          })}
+          {sponsored.slice(AD_SLOTS.filter((n) => n < posts.length).length).map((ad) => (
+            <PropertyCard key={`ad-${ad.adId}`} property={ad.property} adId={ad.adId} />
           ))}
         </ul>
       )}

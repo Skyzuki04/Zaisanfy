@@ -108,8 +108,8 @@ Guardarlos rompería la 3FN, así que se calculan en la base:
 | Nombre y correo del cliente para quien recibe | `my_inbox()`: la bandeja de la Consola, con los datos actuales del cliente |
 | Plan actual | `my_plan()`: la suscripción activa o `freemium` |
 | Saldo de créditos | `my_credits()`: suma de `credit_movements` |
-| Anuncio vigente | `ad_is_live()`: dentro de fechas y con el pago en `pagado` |
-| Vistas y clics de un anuncio | `count(*)` sobre `ad_events` |
+| Anuncio vigente | `ad_is_live()`: hoy (hora de México) dentro de las fechas pagadas, con el pago en `pagado` y la propiedad publicada |
+| Vistas y clics de un anuncio | `my_ad_stats()`: los anuncios del vendedor con `count(*)` sobre `ad_events` |
 
 ## Validación en dos niveles
 
