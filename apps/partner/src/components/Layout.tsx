@@ -30,6 +30,7 @@ export default function Layout() {
         <span className="row"><Logo size={30} /><span className="console-tag">Consola</span></span>
         <nav>
           {(role === "vendedor" || role === "admin") && <NavLink to="/propiedades">Mis propiedades</NavLink>}
+          {role === "vendedor" && <NavLink to="/anuncios">Mis anuncios</NavLink>}
           {role === "creativo" && <NavLink to="/perfil">Mi perfil</NavLink>}
           {role === "creativo" && <NavLink to="/portafolio">Mi portafolio</NavLink>}
           {role !== "visitante" && <NavLink to="/solicitudes">Solicitudes</NavLink>}

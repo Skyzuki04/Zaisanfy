@@ -5,6 +5,7 @@ import Login from "./pages/Login";
 import MisPropiedades from "./pages/MisPropiedades";
 import PropertyForm from "./pages/PropertyForm";
 import Solicitudes from "./pages/Solicitudes";
+import MisAnuncios from "./pages/MisAnuncios";
 import MiPerfil from "./pages/MiPerfil";
 import MiPortafolio from "./pages/MiPortafolio";
 import PostForm from "./pages/PostForm";
@@ -38,6 +39,14 @@ export default function App() {
               element={
                 <RequireRole roles={["vendedor", "admin"]}>
                   <PropertyForm />
+                </RequireRole>
+              }
+            />
+            <Route
+              path="/anuncios"
+              element={
+                <RequireRole roles={["vendedor"]}>
+                  <MisAnuncios />
                 </RequireRole>
               }
             />

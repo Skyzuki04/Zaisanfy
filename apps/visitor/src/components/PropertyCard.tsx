@@ -4,16 +4,19 @@ import { formatPrice, TYPE_LABEL } from "@/lib/format";
 import { orderedPhotos } from "@/lib/photos";
 import BookmarkButton from "./BookmarkButton";
 import { cld } from "@/lib/cloudinary";
+import SponsoredTag from "./SponsoredTag";
 
-export default function PropertyCard({ property }: { property: Property }) {
+// adId: la tarjeta es un anuncio y lleva la etiqueta "Patrocinado"
+export default function PropertyCard({ property, adId }: { property: Property; adId?: string }) {
   const d = property.data;
   const cover = orderedPhotos(property)[0];
   return (
-    <li className="card property-card">
+    <li className={adId ? "card property-card sponsored" : "card property-card"}>
       <Link href={`/propiedad/${property.id}`} className="cover">
         {cover ? <img src={cld(cover, 640)} alt={d.title} loading="lazy" decoding="async" width={640} height={480} /> : <div className="no-photo">Sin foto</div>}
         {d.media.panorama360Url && <span className="tag360">360°</span>}
       </Link>
+      {adId && <SponsoredTag adId={adId} />}
       <BookmarkButton propertyId={property.id} title={d.title} className="on-card" />
       <h2>
         <Link href={`/propiedad/${property.id}`}>{d.title}</Link>

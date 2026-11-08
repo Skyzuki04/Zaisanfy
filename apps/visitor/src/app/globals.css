@@ -398,3 +398,25 @@ button.primary:hover, .button.primary:hover { box-shadow: 0 10px 30px var(--glow
 .site-header nav a.nav-join { color: var(--muted); font-size: 0.95rem; }
 .site-header nav a.nav-join:hover { color: var(--gold); }
 @media (max-width: 600px) { .site-header nav a.nav-join { display: none; } }
+
+/* Anuncios (ADS-01): tarjeta normal con la etiqueta "Patrocinado" */
+.tag-sponsored { display: inline-block; margin: 16px 20px -8px; padding: 2px 10px; border-radius: 999px; border: 1px solid rgba(201,168,118,0.55); color: var(--gold); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.12em; }
+
+/* Ruta de visitas de Mi Lista (RF-VIS-05) */
+.route-cta { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+.route-cta h2 { margin: 0 0 4px; }
+.route-cta p { margin: 0; }
+.route-planner { margin-bottom: 20px; display: grid; gap: 16px; }
+.route-planner .row.between { justify-content: space-between; }
+.route-planner h2 { margin: 0; }
+.route-planner fieldset { border: 0; padding: 0; margin: 0; display: grid; gap: 8px; }
+.route-planner legend { font-weight: 600; margin-bottom: 8px; }
+.route-planner .choice { display: flex; gap: 10px; align-items: center; cursor: pointer; }
+.route-planner .origin-detail { margin-left: 28px; }
+.route-planner input[type="text"] { padding: 10px 12px; border-radius: 12px; font: inherit; max-width: 480px; }
+.small { font-size: 0.85rem; }
+.route-result { border-top: 1px solid var(--glass-line); padding-top: 16px; display: grid; gap: 10px; justify-items: start; }
+.route-total { margin: 0; font-size: 1.15rem; }
+.route-total strong { color: var(--gold); }
+.route-legs { margin: 0; padding-left: 22px; display: grid; gap: 6px; }
+@media (max-width: 600px) { .route-planner .origin-detail { margin-left: 0; } }

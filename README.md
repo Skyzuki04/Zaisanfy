@@ -71,6 +71,7 @@ Cada una tiene su prueba en [`supabase/tests`](supabase/tests): se corre igual, 
 | 0007 | `0007_upgrade_role.sql` | Mejora de cuenta: cliente → vendedor o creativo | `0007_prueba_mejora_de_cuenta.sql` → `MEJORA DE CUENTA OK` |
 | 0008 | `0008_tercera_forma_normal.sql` | Modelo en 3FN: propiedades en columnas, `property_photos`, `post_images`, solicitudes sin datos copiados | `0008_prueba_3fn.sql` → `3FN OK` |
 | 0009 | `0009_pagos.sql` | ZAI-32/34/36 · planes, suscripciones, pagos, créditos, leads y anuncios (solo base) | `0009_prueba_pagos.sql` → `PAGOS OK` |
+| 0010 | `0010_anuncios.sql` | ZAI-36 · ADS-01: anuncio vigente en hora de México y solo con la propiedad publicada; `my_ad_stats()` | `0010_prueba_anuncios.sql` → `ANUNCIOS OK` |
 
 Para correr **todas las pruebas de una vez**: [`supabase/tests/0000_todas_las_pruebas.sql`](supabase/tests/0000_todas_las_pruebas.sql) (termina con `TODAS LAS PRUEBAS OK`).
 Las migraciones se corren **una sola vez**; las pruebas, cuantas veces quieras.
