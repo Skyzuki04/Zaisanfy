@@ -5,6 +5,9 @@ import { TYPE_LABEL } from "@/lib/format";
 export default function SearchForm({ filters }: { filters: Filters }) {
   return (
     <form method="get" action="/" className="card search" role="search">
+      {/* ZAI-38: al cambiar otros filtros se conserva la zona elegida en el mapa */}
+      {filters.cerca && <input type="hidden" name="cerca" value={`${filters.cerca.lat},${filters.cerca.lng}`} />}
+      {filters.tiempo && <input type="hidden" name="tiempo" value={filters.tiempo} />}
       <label>
         Ubicación
         <input name="ubicacion" defaultValue={filters.ubicacion} placeholder="Ciudad, estado o colonia" />

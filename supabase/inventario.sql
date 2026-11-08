@@ -19,6 +19,7 @@ with esperado(tipo, nombre) as (
     ('funcion', 'save_property'), ('funcion', 'save_post'), ('funcion', 'request_recipient'),
     ('funcion', 'kind'), ('funcion', 'my_inbox'),
     ('funcion', 'my_plan'), ('funcion', 'my_credits'), ('funcion', 'ad_is_live'), ('funcion', 'my_ad_stats'),
+    ('funcion', 'properties_in_zone'),
     -- triggers
     ('trigger', 'properties.properties_set_updated_at'), ('trigger', 'profiles.profiles_set_updated_at'),
     ('trigger', 'creative_profiles.creative_profiles_set_updated_at'), ('trigger', 'creative_posts.creative_posts_set_updated_at'),
