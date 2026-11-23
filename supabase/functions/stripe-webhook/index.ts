@@ -63,7 +63,11 @@ async function handle(event: Stripe.Event) {
 
     case "invoice.paid": {
       const invoice = event.data.object;
-      const subId = typeof invoice.subscription === "string" ? invoice.subscription : invoice.subscription?.id;
+      // Versiones de API viejas mandan invoice.subscription; las nuevas (2025-03-31 en adelante), invoice.parent
+      // deno-lint-ignore no-explicit-any
+      const inv = invoice as any;
+      const rawSub = inv.subscription ?? inv.parent?.subscription_details?.subscription;
+      const subId: string | undefined = typeof rawSub === "string" ? rawSub : rawSub?.id;
       if (!subId) return;
       // invoice.paid puede llegar antes que subscription.created: primero se asegura la suscripción
       await applySubscription(subId);
