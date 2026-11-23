@@ -57,7 +57,9 @@ export const ContactRequestSchema = z.object({
 });
 export type ContactRequest = z.infer<typeof ContactRequestSchema>;
 
-export const CONTACT_SELECT = "*, kind";
+// Sin "*": desde la 0015 el teléfono no se lee directo de la tabla (pay-wall). El tipo se calcula con contactKind().
+export const CONTACT_SELECT = "id, property_id, creative_id, post_id, requester_id, operation, preferred_times, message, status, created_at, updated_at";
+export const contactKind = (r: { property_id: string | null }): ContactKind => (r.property_id ? "visita" : "cotizacion");
 
 export type InboxRow = {
   id: string;

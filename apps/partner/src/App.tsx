@@ -9,6 +9,7 @@ import MisAnuncios from "./pages/MisAnuncios";
 import MiPerfil from "./pages/MiPerfil";
 import MiPortafolio from "./pages/MiPortafolio";
 import PostForm from "./pages/PostForm";
+import MiPlan from "./pages/MiPlan";
 
 export default function App() {
   return (
@@ -55,6 +56,14 @@ export default function App() {
               element={
                 <RequireRole roles={["vendedor", "creativo", "admin"]}>
                   <Solicitudes />
+                </RequireRole>
+              }
+            />
+            <Route
+              path="/plan"
+              element={
+                <RequireRole roles={["vendedor", "creativo"]}>
+                  <MiPlan />
                 </RequireRole>
               }
             />

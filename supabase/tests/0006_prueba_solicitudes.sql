@@ -26,7 +26,7 @@ declare r public.contact_requests;
 begin
   insert into public.contact_requests (property_id, requester_id, message)
   values ('00000000-0000-0000-0000-0000000001f1', '00000000-0000-0000-0000-00000000e002', 'Me interesa')
-  returning * into r;
+  returning id, property_id, creative_id, post_id, requester_id into r.id, r.property_id, r.creative_id, r.post_id, r.requester_id; -- el teléfono no se lee (0015)
   if public.request_recipient(r.property_id, r.creative_id, r.post_id) <> '00000000-0000-0000-0000-00000000e003' then raise exception 'FALLA: el destinatario no es el vendedor'; end if;
   if r.requester_id <> '00000000-0000-0000-0000-00000000e001' then raise exception 'FALLA: se mandó a nombre de otro'; end if;
   if public.kind(r) <> 'visita' then raise exception 'FALLA: el tipo no es visita'; end if;

@@ -74,6 +74,11 @@ Cada una tiene su prueba en [`supabase/tests`](supabase/tests): se corre igual, 
 | 0010 | `0010_anuncios.sql` | ZAI-36 · ADS-01: anuncio vigente en hora de México y solo con la propiedad publicada; `my_ad_stats()` | `0010_prueba_anuncios.sql` → `ANUNCIOS OK` |
 | 0012 | `0012_isocronas.sql` | ZAI-38 · GEO-01: PostGIS, punto `geom` de cada propiedad (sale de `lat`/`lng`) y `properties_in_zone(zone)` para buscar dentro de una isocrona. La 0011 está apartada para Minette | `0012_prueba_isocronas.sql` → `ISOCRONAS OK` |
 | 0013 | `0013_limite_publicaciones.sql` | Límite WIP del vendedor: no deja publicar más propiedades de las que permite su plan (Freemium 3, Pro 25, Enterprise sin límite). Error `ZA001`; `my_publish_quota()` para la Consola | `0013_prueba_limite_publicaciones.sql` → `LIMITE WIP OK` |
+| 0014 | `0014_stripe.sql` | ZAI-32 · funciones del webhook de Stripe (alta/cambio/cancelación del plan, cobro mensual con sus créditos, sin duplicar) y `my_subscription()` | `0014_prueba_stripe.sql` → `STRIPE OK` |
+| 0015 | `0015_paywall_leads.sql` | ZAI-33/34/35 · pay-wall: la cotización llega con el contacto oculto (el teléfono ya no se lee directo de la tabla); `unlock_lead_with_credit()`, desbloqueo pagado y `my_credit_history()` | `0015_prueba_paywall_leads.sql` → `PAYWALL OK` |
+| 0016 | `0016_compra_anuncios.sql` | ZAI-36 · `ad_quote()` (precio y reglas) y alta del anuncio pagado desde el webhook | `0016_prueba_compra_anuncios.sql` → `COMPRA ANUNCIOS OK` |
+
+Pagos (Fase 3): cómo conectar Stripe y probarlo en [`docs/stripe.md`](docs/stripe.md).
 
 Para correr **todas las pruebas de una vez**: [`supabase/tests/0000_todas_las_pruebas.sql`](supabase/tests/0000_todas_las_pruebas.sql) (termina con `TODAS LAS PRUEBAS OK`).
 Las migraciones se corren **una sola vez**; las pruebas, cuantas veces quieras.

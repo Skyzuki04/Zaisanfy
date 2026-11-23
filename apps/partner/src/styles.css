@@ -190,3 +190,18 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--g
 /* Límite WIP del plan (Mis propiedades) */
 .quota { padding: 10px 16px; border-radius: 12px; border: 1px solid rgba(201,168,118,0.4); background: rgba(201,168,118,0.08); }
 .quota.full { border-color: var(--danger); background: #fbeeee; }
+
+/* Mi plan (ZAI-32) */
+.plans { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin: 16px 0; }
+.plan { display: flex; flex-direction: column; gap: 10px; }
+.plan.current { border-color: rgba(201,168,118,0.8); box-shadow: 0 0 0 2px rgba(201,168,118,0.25); }
+.plan .price { font-size: 1.6rem; font-weight: 700; margin: 0; }
+.plan ul { margin: 0; padding-left: 18px; flex: 1; }
+.plan-current { margin-bottom: 8px; }
+
+/* Pay-wall de cotizaciones (ZAI-33/34) */
+.request-data.blurred dd { filter: blur(4px); user-select: none; }
+.lock-badge { display: inline-block; margin: 4px 0 8px; }
+
+/* Comprar anuncio (ZAI-36) */
+.buy-ad { margin-bottom: 20px; }

@@ -20,6 +20,9 @@ with esperado(tipo, nombre) as (
     ('funcion', 'kind'), ('funcion', 'my_inbox'),
     ('funcion', 'my_plan'), ('funcion', 'my_credits'), ('funcion', 'ad_is_live'), ('funcion', 'my_ad_stats'),
     ('funcion', 'properties_in_zone'), ('funcion', 'plan_of'), ('funcion', 'properties_publish_limit'), ('funcion', 'my_publish_quota'),
+    ('funcion', 'lead_price_mxn'), ('funcion', 'ad_price_per_day_mxn'), ('funcion', 'stripe_apply_subscription'), ('funcion', 'stripe_record_invoice'),
+    ('funcion', 'stripe_record_payment'), ('funcion', 'stripe_save_customer'), ('funcion', 'my_subscription'), ('funcion', 'lead_is_locked'),
+    ('funcion', 'unlock_lead_with_credit'), ('funcion', 'stripe_unlock_lead'), ('funcion', 'my_credit_history'), ('funcion', 'ad_quote'), ('funcion', 'stripe_create_ad'),
     -- triggers
     ('trigger', 'properties.properties_set_updated_at'), ('trigger', 'profiles.profiles_set_updated_at'),
     ('trigger', 'creative_profiles.creative_profiles_set_updated_at'), ('trigger', 'creative_posts.creative_posts_set_updated_at'),

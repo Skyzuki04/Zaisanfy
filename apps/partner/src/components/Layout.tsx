@@ -34,6 +34,7 @@ export default function Layout() {
           {role === "creativo" && <NavLink to="/perfil">Mi perfil</NavLink>}
           {role === "creativo" && <NavLink to="/portafolio">Mi portafolio</NavLink>}
           {role !== "visitante" && <NavLink to="/solicitudes">Solicitudes</NavLink>}
+          {(role === "vendedor" || role === "creativo") && <NavLink to="/plan">Mi plan</NavLink>}
         </nav>
         <a href={visitorUrl} target="_blank" rel="noreferrer" className="to-site" onClick={(e) => withSession(e, session)}>
           Ver Escaparate ↗

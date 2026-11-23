@@ -1,0 +1,3 @@
+# Solo la configuración de las Edge Functions (el resto del proyecto se maneja desde el panel de Supabase)
+[functions.stripe-webhook]
+verify_jwt = false

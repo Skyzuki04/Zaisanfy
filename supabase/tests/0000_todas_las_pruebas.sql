@@ -1,4 +1,4 @@
--- Todas las pruebas (0002 a 0013). Cada una hace ROLLBACK y no deja datos.
+-- Todas las pruebas (0002 a 0016). Cada una hace ROLLBACK y no deja datos.
 -- Al final debe decir TODAS LAS PRUEBAS OK. Si algo falla, el error empieza con FALLA:
 
 -- 0002_prueba_permisos.sql
@@ -444,7 +444,7 @@ declare r public.contact_requests;
 begin
   insert into public.contact_requests (property_id, requester_id, message)
   values ('00000000-0000-0000-0000-0000000001f1', '00000000-0000-0000-0000-00000000e002', 'Me interesa')
-  returning * into r;
+  returning id, property_id, creative_id, post_id, requester_id into r.id, r.property_id, r.creative_id, r.post_id, r.requester_id; -- el teléfono no se lee (0015)
   if public.request_recipient(r.property_id, r.creative_id, r.post_id) <> '00000000-0000-0000-0000-00000000e003' then raise exception 'FALLA: el destinatario no es el vendedor'; end if;
   if r.requester_id <> '00000000-0000-0000-0000-00000000e001' then raise exception 'FALLA: se mandó a nombre de otro'; end if;
   if public.kind(r) <> 'visita' then raise exception 'FALLA: el tipo no es visita'; end if;
@@ -733,7 +733,7 @@ declare r public.contact_requests;
 begin
   insert into public.contact_requests (creative_id, post_id)
   values ('00000000-0000-0000-0000-00000000a803', (select id from public.creative_posts where title = 'Render 3FN'))
-  returning * into r;
+  returning id, property_id, creative_id, post_id, requester_id into r.id, r.property_id, r.creative_id, r.post_id, r.requester_id; -- el teléfono no se lee (0015)
   if r.creative_id is not null or r.post_id is null then raise exception 'FALLA: la cotización no quedó ligada solo a la publicación'; end if;
   if public.request_recipient(r.property_id, r.creative_id, r.post_id) <> '00000000-0000-0000-0000-00000000a803' then
     raise exception 'FALLA: la cotización no le llega al creativo';
@@ -749,7 +749,7 @@ end $$;
 select set_config('request.jwt.claims', '{"sub": "00000000-0000-0000-0000-00000000a803", "role": "authenticated"}', true);
 
 do $$ begin
-  if not exists (select 1 from public.my_inbox() where post_title = 'Render 3FN' and requester_name = 'Cliente Ocho') then
+  if not exists (select 1 from public.my_inbox() where post_title = 'Render 3FN' and requester_name = 'C••••••' and requester_email is null and locked) then -- pay-wall (0015)
     raise exception 'FALLA: el creativo no ve la cotización en su bandeja';
   end if;
 end $$;
@@ -1062,6 +1062,315 @@ exception when insufficient_privilege then null;
 end $$;
 
 select 'LIMITE WIP OK' as resultado;
+rollback;
+
+-- 0014_prueba_stripe.sql
+-- Prueba de suscripciones con Stripe (ZAI-32). Resultado: STRIPE OK
+-- Simula lo que hace el webhook: alta, cobro mensual (con evento repetido), cambio de plan y cancelación.
+begin;
+
+insert into auth.users (id, email, email_confirmed_at, raw_user_meta_data) values
+  ('00000000-0000-0000-0000-00000000e141', 'vendedor.14@zaisanfy.test', now(), '{"role": "vendedor"}'),
+  ('00000000-0000-0000-0000-00000000e142', 'otro.14@zaisanfy.test',     now(), '{"role": "vendedor"}');
+
+-- El navegador no puede llamar las funciones del webhook
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub": "00000000-0000-0000-0000-00000000e141", "role": "authenticated"}', true);
+do $$ begin
+  begin
+    perform public.stripe_apply_subscription('00000000-0000-0000-0000-00000000e141', 'enterprise', 'sub_hack', 'activa', now(), now() + interval '1 month', false);
+    raise exception 'FALLA: el navegador se puso un plan sin pagar';
+  exception when insufficient_privilege then null;
+  end;
+  if public.my_plan() <> 'freemium' then raise exception 'FALLA: sin pagar no es Freemium'; end if;
+end $$;
+
+-- Webhook: pagó Pro
+reset role;
+set local role service_role;
+select public.stripe_save_customer('00000000-0000-0000-0000-00000000e141', 'cus_test14');
+select public.stripe_save_customer('00000000-0000-0000-0000-00000000e141', 'cus_test14');
+select public.stripe_apply_subscription('00000000-0000-0000-0000-00000000e141', 'pro', 'sub_test14', 'activa',
+  now(), now() + interval '1 month', false);
+select public.stripe_record_invoice('sub_test14', 499, 'in_test14_1');
+select public.stripe_record_invoice('sub_test14', 499, 'in_test14_1'); -- evento repetido
+
+reset role;
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub": "00000000-0000-0000-0000-00000000e141", "role": "authenticated"}', true);
+do $$
+declare s record;
+begin
+  select * into s from public.my_subscription();
+  if s.plan_id <> 'pro' or s.status <> 'activa' then raise exception 'FALLA: el plan no cambió a Pro (%)', s.plan_id; end if;
+  if s.credits <> 10 then raise exception 'FALLA: créditos del mes = % (esperaba 10, sin duplicar)', s.credits; end if;
+  if (select count(*) from public.payments) <> 1 then raise exception 'FALLA: el cobro repetido se guardó dos veces'; end if;
+end $$;
+
+-- El otro vendedor no ve nada de esto
+select set_config('request.jwt.claims', '{"sub": "00000000-0000-0000-0000-00000000e142", "role": "authenticated"}', true);
+do $$ begin
+  if exists (select 1 from public.subscriptions) or exists (select 1 from public.payments) then
+    raise exception 'FALLA: un vendedor ve la suscripción o pagos de otro';
+  end if;
+  if public.my_plan() <> 'freemium' then raise exception 'FALLA: el otro vendedor no es Freemium'; end if;
+end $$;
+
+-- Cancela: sigue en Pro hasta que termina el periodo, luego Stripe la borra y regresa a Freemium
+reset role;
+set local role service_role;
+select public.stripe_apply_subscription('00000000-0000-0000-0000-00000000e141', 'pro', 'sub_test14', 'activa',
+  now(), now() + interval '1 month', true);
+
+reset role;
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub": "00000000-0000-0000-0000-00000000e141", "role": "authenticated"}', true);
+do $$ begin
+  if public.my_plan() <> 'pro' or not (select cancel_at_period_end from public.my_subscription()) then
+    raise exception 'FALLA: al cancelar debe seguir en Pro hasta fin de mes';
+  end if;
+end $$;
+
+reset role;
+set local role service_role;
+select public.stripe_apply_subscription('00000000-0000-0000-0000-00000000e141', 'pro', 'sub_test14', 'cancelada',
+  now() - interval '1 month', now(), true);
+
+reset role;
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub": "00000000-0000-0000-0000-00000000e141", "role": "authenticated"}', true);
+do $$ begin
+  if public.my_plan() <> 'freemium' then raise exception 'FALLA: al terminar el periodo no regresó a Freemium'; end if;
+end $$;
+
+-- Vuelve a pagar, ahora Enterprise: queda una sola suscripción viva
+reset role;
+set local role service_role;
+select public.stripe_apply_subscription('00000000-0000-0000-0000-00000000e141', 'enterprise', 'sub_test14_b', 'activa',
+  now(), now() + interval '1 month', false);
+do $$ begin
+  if (select count(*) from public.subscriptions where user_id = '00000000-0000-0000-0000-00000000e141'
+      and status in ('activa', 'en_prueba', 'pago_vencido')) <> 1 then
+    raise exception 'FALLA: quedaron dos suscripciones vivas';
+  end if;
+end $$;
+
+reset role;
+select 'STRIPE OK' as resultado;
+rollback;
+
+-- 0015_prueba_paywall_leads.sql
+-- Prueba del pay-wall y desbloqueo de leads (ZAI-33, ZAI-34) y del panel de leads del vendedor (ZAI-35).
+-- Resultado: PAYWALL OK
+begin;
+
+insert into auth.users (id, email, email_confirmed_at, raw_user_meta_data) values
+  ('00000000-0000-0000-0000-00000000f151', 'cliente.15@zaisanfy.test',   now(), '{"role": "visitante", "full_name": "Laura Cliente"}'),
+  ('00000000-0000-0000-0000-00000000f152', 'creativo.15@zaisanfy.test',  now(), '{"role": "creativo"}'),
+  ('00000000-0000-0000-0000-00000000f153', 'vendedor.15a@zaisanfy.test', now(), '{"role": "vendedor"}'),
+  ('00000000-0000-0000-0000-00000000f154', 'vendedor.15b@zaisanfy.test', now(), '{"role": "vendedor"}'),
+  ('00000000-0000-0000-0000-00000000f155', 'creativo.15b@zaisanfy.test', now(), '{"role": "creativo"}');
+
+insert into public.creative_profiles (id, display_name) values
+  ('00000000-0000-0000-0000-00000000f152', 'Estudio 15'),
+  ('00000000-0000-0000-0000-00000000f155', 'Estudio 15 B');
+
+insert into public.properties (id, seller_id, status, title, operation, property_type, price, state, city) values
+  ('00000000-0000-0000-0000-0000000015a1', '00000000-0000-0000-0000-00000000f153', 'published', 'Casa A', 'venta', 'casa', 100, 'Jalisco', 'Zapopan'),
+  ('00000000-0000-0000-0000-0000000015a2', '00000000-0000-0000-0000-00000000f154', 'published', 'Casa B', 'venta', 'casa', 100, 'Jalisco', 'Zapopan');
+
+-- El cliente pide 2 cotizaciones (a 2 creativos) y 2 visitas (a 2 vendedores)
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub": "00000000-0000-0000-0000-00000000f151", "role": "authenticated"}', true);
+insert into public.contact_requests (id, creative_id, phone, message) values
+  ('00000000-0000-0000-0000-0000000015c1', '00000000-0000-0000-0000-00000000f152', '3312345678', 'Quiero un render'),
+  ('00000000-0000-0000-0000-0000000015c2', '00000000-0000-0000-0000-00000000f155', '3312345678', 'Quiero un plano');
+insert into public.contact_requests (id, property_id, phone) values
+  ('00000000-0000-0000-0000-0000000015c3', '00000000-0000-0000-0000-0000000015a1', '3312345678'),
+  ('00000000-0000-0000-0000-0000000015c4', '00000000-0000-0000-0000-0000000015a2', '3312345678');
+
+-- ZAI-33: el creativo ve la cotización con el contacto oculto, y no puede leer el teléfono directo
+select set_config('request.jwt.claims', '{"sub": "00000000-0000-0000-0000-00000000f152", "role": "authenticated"}', true);
+do $$
+declare i record;
+begin
+  select * into i from public.my_inbox();
+  if not i.locked or i.requester_email is not null or i.phone is not null or i.requester_name <> 'L••••••' then
+    raise exception 'FALLA: la cotización bloqueada deja ver el contacto (% % %)', i.requester_name, i.requester_email, i.phone;
+  end if;
+  if i.message <> 'Quiero un render' then raise exception 'FALLA: el creativo no ve qué le piden'; end if;
+  begin
+    perform phone from public.contact_requests;
+    raise exception 'FALLA: el teléfono se puede leer directo de la tabla';
+  exception when insufficient_privilege then null;
+  end;
+  -- ZAI-34: sin créditos no se desbloquea gratis
+  begin
+    perform public.unlock_lead_with_credit('00000000-0000-0000-0000-0000000015c1');
+    raise exception 'FALLA: desbloqueó sin créditos';
+  exception when sqlstate 'ZA002' then null;
+  end;
+  -- Ni puede desbloquear la de otro creativo
+  begin
+    perform public.unlock_lead_with_credit('00000000-0000-0000-0000-0000000015c2');
+    raise exception 'FALLA: desbloqueó un lead que no es suyo';
+  exception when insufficient_privilege then null;
+  end;
+end $$;
+
+-- Le llegan 10 créditos de su plan Pro
+reset role;
+set local role service_role;
+select public.stripe_apply_subscription('00000000-0000-0000-0000-00000000f152', 'pro', 'sub_test15', 'activa', now(), now() + interval '1 month', false);
+select public.stripe_record_invoice('sub_test15', 499, 'in_test15_1');
+
+reset role;
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub": "00000000-0000-0000-0000-00000000f152", "role": "authenticated"}', true);
+do $$
+declare i record;
+begin
+  if public.unlock_lead_with_credit('00000000-0000-0000-0000-0000000015c1') <> 'desbloqueada' then raise exception 'FALLA: no se desbloqueó'; end if;
+  if public.unlock_lead_with_credit('00000000-0000-0000-0000-0000000015c1') <> 'ya_desbloqueada' then raise exception 'FALLA: no detectó la repetida'; end if;
+  if public.my_credits() <> 9 then raise exception 'FALLA: se cobró dos veces (créditos = %)', public.my_credits(); end if;
+  select * into i from public.my_inbox();
+  if i.locked or i.requester_email <> 'cliente.15@zaisanfy.test' or i.phone <> '3312345678' or i.unlocked_at is null then
+    raise exception 'FALLA: desbloqueada no muestra el contacto';
+  end if;
+  if (select count(*) from public.my_credit_history()) <> 2 then raise exception 'FALLA: el historial no tiene plan + desbloqueo'; end if;
+end $$;
+
+-- El otro creativo desbloquea pagando con Stripe (webhook repetido no cobra 2 veces)
+reset role;
+set local role service_role;
+select public.stripe_unlock_lead('00000000-0000-0000-0000-00000000f155', '00000000-0000-0000-0000-0000000015c2', 49, 'cs_test15');
+select public.stripe_unlock_lead('00000000-0000-0000-0000-00000000f155', '00000000-0000-0000-0000-0000000015c2', 49, 'cs_test15');
+do $$ begin
+  if (select count(*) from public.payments where stripe_payment_intent_id = 'cs_test15') <> 1 then raise exception 'FALLA: pago doble del lead'; end if;
+  begin
+    perform public.stripe_unlock_lead('00000000-0000-0000-0000-00000000f155', '00000000-0000-0000-0000-0000000015c1', 49, 'cs_test15_x');
+    raise exception 'FALLA: el webhook desbloqueó un lead de otro';
+  exception when raise_exception then null;
+  end;
+end $$;
+
+-- ZAI-35: cada vendedor ve sus leads de visita completos, nunca los del otro
+reset role;
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub": "00000000-0000-0000-0000-00000000f153", "role": "authenticated"}', true);
+do $$
+declare i record;
+begin
+  if (select count(*) from public.my_inbox()) <> 1 then raise exception 'FALLA: el vendedor A no ve solo su lead'; end if;
+  select * into i from public.my_inbox();
+  if i.property_title <> 'Casa A' or i.locked or i.requester_email is null or i.status <> 'nueva' then
+    raise exception 'FALLA: el lead de visita no se ve completo y como nuevo';
+  end if;
+  update public.contact_requests set status = 'contactado' where id = i.id;
+  if (select status from public.my_inbox()) <> 'contactado' then raise exception 'FALLA: no se marcó como visto'; end if;
+end $$;
+
+select set_config('request.jwt.claims', '{"sub": "00000000-0000-0000-0000-00000000f154", "role": "authenticated"}', true);
+do $$ begin
+  if exists (select 1 from public.my_inbox() where property_title = 'Casa A') then raise exception 'FALLA: B ve los leads de A'; end if;
+  update public.contact_requests set status = 'cerrada' where id = '00000000-0000-0000-0000-0000000015c3';
+  if exists (select 1 from public.contact_requests where id = '00000000-0000-0000-0000-0000000015c3') then
+    raise exception 'FALLA: B puede ver la solicitud de A';
+  end if;
+end $$;
+
+reset role;
+do $$ begin
+  if (select status from public.contact_requests where id = '00000000-0000-0000-0000-0000000015c3') <> 'contactado' then
+    raise exception 'FALLA: B cambió el lead de A';
+  end if;
+end $$;
+
+select 'PAYWALL OK' as resultado;
+rollback;
+
+-- 0016_prueba_compra_anuncios.sql
+-- Prueba de la compra de anuncios (ZAI-36). Resultado: COMPRA ANUNCIOS OK
+begin;
+
+insert into auth.users (id, email, email_confirmed_at, raw_user_meta_data) values
+  ('00000000-0000-0000-0000-00000000a161', 'vendedor.16@zaisanfy.test', now(), '{"role": "vendedor"}'),
+  ('00000000-0000-0000-0000-00000000a162', 'otro.16@zaisanfy.test',     now(), '{"role": "vendedor"}');
+
+insert into public.properties (id, seller_id, status, title, operation, property_type, price, state, city) values
+  ('00000000-0000-0000-0000-0000000016f1', '00000000-0000-0000-0000-00000000a161', 'published', 'Para anunciar', 'venta', 'casa', 100, 'Jalisco', 'Zapopan'),
+  ('00000000-0000-0000-0000-0000000016f2', '00000000-0000-0000-0000-00000000a161', 'draft',     'Borrador',      'venta', 'casa', 100, 'Jalisco', 'Zapopan');
+
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub": "00000000-0000-0000-0000-00000000a161", "role": "authenticated"}', true);
+do $$
+declare hoy date := (now() at time zone 'America/Mexico_City')::date;
+begin
+  -- Freemium no puede anunciar
+  begin
+    perform public.ad_quote('00000000-0000-0000-0000-0000000016f1', hoy, hoy + 6);
+    raise exception 'FALLA: Freemium pudo cotizar un anuncio';
+  exception when sqlstate 'ZA003' then null;
+  end;
+end $$;
+
+reset role;
+set local role service_role;
+select public.stripe_apply_subscription('00000000-0000-0000-0000-00000000a161', 'pro', 'sub_test16', 'activa', now(), now() + interval '1 month', false);
+
+reset role;
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub": "00000000-0000-0000-0000-00000000a161", "role": "authenticated"}', true);
+do $$
+declare hoy date := (now() at time zone 'America/Mexico_City')::date;
+begin
+  if public.ad_quote('00000000-0000-0000-0000-0000000016f1', hoy, hoy + 6) <> 7 * public.ad_price_per_day_mxn() then
+    raise exception 'FALLA: el precio de 7 días no cuadra';
+  end if;
+  begin
+    perform public.ad_quote('00000000-0000-0000-0000-0000000016f2', hoy, hoy + 6);
+    raise exception 'FALLA: se cotizó un borrador';
+  exception when sqlstate 'P0001' then null;
+  end;
+  begin
+    perform public.ad_quote('00000000-0000-0000-0000-0000000016f1', hoy + 5, hoy);
+    raise exception 'FALLA: aceptó fechas al revés';
+  exception when sqlstate 'P0001' then null;
+  end;
+  begin
+    perform public.ad_quote('00000000-0000-0000-0000-0000000016f1', hoy - 1, hoy);
+    raise exception 'FALLA: aceptó un anuncio en el pasado';
+  exception when sqlstate 'P0001' then null;
+  end;
+end $$;
+
+-- El otro vendedor no puede cotizar una propiedad ajena
+select set_config('request.jwt.claims', '{"sub": "00000000-0000-0000-0000-00000000a162", "role": "authenticated"}', true);
+do $$ begin
+  perform public.ad_quote('00000000-0000-0000-0000-0000000016f1', current_date + 1, current_date + 2);
+  raise exception 'FALLA: cotizó una propiedad ajena';
+exception when sqlstate 'P0001' then null;
+end $$;
+
+-- Webhook: el pago llega dos veces y solo se crea un anuncio
+reset role;
+set local role service_role;
+select public.stripe_create_ad('00000000-0000-0000-0000-00000000a161', '00000000-0000-0000-0000-0000000016f1', 'buscador',
+  (now() at time zone 'America/Mexico_City')::date, (now() at time zone 'America/Mexico_City')::date + 6, 210, 'cs_test16');
+select public.stripe_create_ad('00000000-0000-0000-0000-00000000a161', '00000000-0000-0000-0000-0000000016f1', 'buscador',
+  (now() at time zone 'America/Mexico_City')::date, (now() at time zone 'America/Mexico_City')::date + 6, 210, 'cs_test16');
+
+reset role;
+set local role anon;
+select set_config('request.jwt.claims', '{"role": "anon"}', true);
+do $$ begin
+  if (select count(*) from public.ads where property_id = '00000000-0000-0000-0000-0000000016f1') <> 1 then
+    raise exception 'FALLA: el anuncio pagado no está vigente o se duplicó';
+  end if;
+end $$;
+
+reset role;
+select 'COMPRA ANUNCIOS OK' as resultado;
 rollback;
 
 select 'TODAS LAS PRUEBAS OK' as resultado;

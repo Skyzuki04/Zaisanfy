@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { CONTACT_KIND_LABEL, CONTACT_STATUS_LABEL, type ContactRequest, friendlyError } from "@zaisanfy/schemas";
+import { CONTACT_KIND_LABEL, CONTACT_STATUS_LABEL, type ContactRequest, friendlyError, CONTACT_SELECT, contactKind } from "@zaisanfy/schemas";
 import { browserSupabase } from "@/lib/supabase-browser";
 import { useMiLista } from "@/lib/bookmarks";
 
@@ -27,13 +27,13 @@ export default function MisSolicitudesPage() {
       .then((sb) =>
         sb
           .from("contact_requests")
-          .select("*, kind, property:properties(id, title), creative:creative_profiles(id, display_name), post:creative_posts(id, title, creative:creative_profiles(id, display_name))")
+          .select(`${CONTACT_SELECT}, property:properties(id, title), creative:creative_profiles(id, display_name), post:creative_posts(id, title, creative:creative_profiles(id, display_name))`)
           .eq("requester_id", userId)
           .order("created_at", { ascending: false }),
       )
       .then(({ data, error }) => {
         if (error) setError(friendlyError(error));
-        setRows((data as unknown as Row[]) ?? []);
+        setRows(((data as unknown as Row[]) ?? []).map((r) => ({ ...r, kind: contactKind(r) })));
       });
   }, [userId]);
 
