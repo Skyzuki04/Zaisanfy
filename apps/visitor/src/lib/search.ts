@@ -8,10 +8,14 @@ export type Filters = {
   operacion?: Operation;
   min?: number;
   max?: number;
+  orden?: Order;
   // ZAI-38: búsqueda por isocronas (?cerca=lat,lng&tiempo=20)
   cerca?: LatLng;
   tiempo?: Minutes;
 };
+
+export const ORDERS = { recientes: "Más recientes", "precio-asc": "Menor precio", "precio-desc": "Mayor precio" } as const;
+export type Order = keyof typeof ORDERS;
 
 type Params = Record<string, string | string[] | undefined>;
 
@@ -36,12 +40,18 @@ export function parseFilters(params: Params): Filters {
   const operacion = Operation.safeParse(one(params.operacion));
   const cerca = parsePoint(one(params.cerca));
   const tiempo = MINUTES.find((m) => String(m) === one(params.tiempo));
+  let min = money(one(params.min));
+  let max = money(one(params.max));
+  if (min !== undefined && max !== undefined && min > max) [min, max] = [max, min]; // si los escribió al revés
+  const orden = one(params.orden);
   return {
-    ubicacion: one(params.ubicacion)?.replace(/[,()*%\\.:]/g, " ").trim().slice(0, 60) || undefined,
+    // "Zapopan, Jalisco" → "Zapopan": la primera parte es la más específica
+    ubicacion: one(params.ubicacion)?.split(",")[0].replace(/[()*%\\.:]/g, " ").replace(/\s+/g, " ").trim().slice(0, 60) || undefined,
+    orden: orden && orden in ORDERS && orden !== "recientes" ? (orden as Order) : undefined,
     tipo: tipo.success ? tipo.data : undefined,
     operacion: operacion.success ? operacion.data : undefined,
-    min: money(one(params.min)),
-    max: money(one(params.max)),
+    min,
+    max,
     cerca,
     tiempo: cerca ? (tiempo ?? 20) : undefined,
   };
@@ -55,13 +65,14 @@ export function toQuery(f: Filters) {
   if (f.operacion) sp.set("operacion", f.operacion);
   if (f.min !== undefined) sp.set("min", String(f.min));
   if (f.max !== undefined) sp.set("max", String(f.max));
+  if (f.orden) sp.set("orden", f.orden);
   if (f.cerca) sp.set("cerca", `${f.cerca.lat},${f.cerca.lng}`);
   if (f.tiempo) sp.set("tiempo", String(f.tiempo));
   return sp.toString();
 }
 
 export function hasFilters(f: Filters) {
-  return Object.values(f).some((v) => v !== undefined);
+  return Object.entries(f).some(([k, v]) => k !== "orden" && v !== undefined);
 }
 
 // Con zona, la base de datos (PostGIS) regresa solo las propiedades dentro; los demás filtros se suman igual
@@ -84,7 +95,10 @@ export async function searchProperties(f: Filters, zone?: Zone): Promise<Propert
   if (f.operacion) q = q.eq("operation", f.operacion);
   if (f.min !== undefined) q = q.gte("price", f.min);
   if (f.max !== undefined) q = q.lte("price", f.max);
-  const { data, error } = await q.order("created_at", { ascending: false }).limit(60);
+  const sorted = f.orden === "precio-asc" || f.orden === "precio-desc"
+    ? q.order("price", { ascending: f.orden === "precio-asc" }).order("created_at", { ascending: false })
+    : q.order("created_at", { ascending: false });
+  const { data, error } = await sorted.limit(60);
   if (error) throw new Error(friendlyError(error));
   return ((data as unknown as PropertyRow[]) ?? []).map(toProperty);
 }

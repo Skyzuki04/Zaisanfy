@@ -80,6 +80,7 @@ Cada una tiene su prueba en [`supabase/tests`](supabase/tests): se corre igual, 
 | 0017 | `0017_fotografos.sql` | ZAI-39 · SRV-01: zona de trabajo del fotógrafo, `service_requests` (pedido → aceptado → en camino → terminado), solo un fotógrafo gana cada pedido; `nearby_services()` y avisos con Realtime | `0017_prueba_fotografos.sql` → `FOTOGRAFOS OK` |
 | 0018 | `0018_reportes.sql` | ZAI-33 antitrolls · botón "Reportar" en propiedades y publicaciones; el admin oculta o descarta (`admin_reports()`, `resolve_report()`); lo ocultado no se puede re-publicar solo | `0018_prueba_reportes.sql` → `REPORTES OK` |
 | 0019 | `0019_leads_vistos.sql` | ZAI-35 · `seen_at`: el lead se marca como visto al abrir la bandeja (`mark_inbox_seen()`) | `0019_prueba_leads_vistos.sql` → `LEADS VISTOS OK` |
+| 0020 | `0020_mejoras_negocio.sql` | No deja pagar un anuncio encimado con otro (`ad_quote` con lugar) y cancela solo el pedido de fotógrafo vencido al pedir otro | `0020_prueba_mejoras_negocio.sql` → `MEJORAS OK` |
 
 Pagos (Fase 3): cómo conectar Stripe y probarlo en [`docs/stripe.md`](docs/stripe.md).
 

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { Filters } from "@/lib/search";
+import { ORDERS, type Filters } from "@/lib/search";
 import { TYPE_LABEL } from "@/lib/format";
 
 export default function SearchForm({ filters }: { filters: Filters }) {
@@ -38,6 +38,16 @@ export default function SearchForm({ filters }: { filters: Filters }) {
       <label>
         Precio máximo
         <input name="max" type="number" min="0" step="1000" defaultValue={filters.max} placeholder="$" />
+      </label>
+      <label>
+        Ordenar
+        <select name="orden" defaultValue={filters.orden ?? "recientes"}>
+          {Object.entries(ORDERS).map(([value, label]) => (
+            <option key={value} value={value}>
+              {label}
+            </option>
+          ))}
+        </select>
       </label>
       <div className="search-actions">
         <button type="submit" className="primary">

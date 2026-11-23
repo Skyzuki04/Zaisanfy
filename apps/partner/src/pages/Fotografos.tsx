@@ -163,11 +163,21 @@ function SellerView({ userId }: { userId: string }) {
               <span className="muted small">{dateFmt.format(new Date(r.scheduled_at))}</span>
             </div>
             <Timeline status={r.status} />
-            <p className="muted small">
-              {r.photographer ? <>Fotógrafo: <strong>{r.photographer.display_name}</strong> · </> : r.status === "pedido" ? "Buscando fotógrafo cercano… · " : ""}
-              {r.address}
-            </p>
-            {(r.status === "pedido" || r.status === "aceptado") && (
+            {(() => {
+              const expired = r.status === "pedido" && new Date(r.scheduled_at).getTime() < Date.now();
+              return (
+                <p className="muted small">
+                  {r.photographer ? <>Fotógrafo: <strong>{r.photographer.display_name}</strong> · </> : expired ? "Ningún fotógrafo lo tomó a tiempo. Pide otro con nueva fecha. · " : r.status === "pedido" ? "Buscando fotógrafo cercano… · " : ""}
+                  {r.address}
+                </p>
+              );
+            })()}
+            {r.status === "terminado" && (
+              <Link to={`/propiedades/${r.property_id}`} className="button small primary">
+                Subir las fotos 360 a la propiedad
+              </Link>
+            )}
+            {(r.status === "pedido" || r.status === "aceptado") && new Date(r.scheduled_at).getTime() >= Date.now() && (
               <button type="button" className="small danger" onClick={() => cancel(r.id)}>
                 Cancelar
               </button>

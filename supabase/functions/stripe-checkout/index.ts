@@ -85,7 +85,7 @@ Deno.serve(async (req) => {
         return json({ error: "Revisa la propiedad, el lugar y las fechas" }, 400);
       }
       // ad_quote valida dueño, propiedad publicada, plan con anuncios y fechas, y regresa el precio
-      const { data: amount, error } = await db.rpc("ad_quote", { p_property: propertyId, p_starts: startsOn, p_ends: endsOn });
+      const { data: amount, error } = await db.rpc("ad_quote", { p_property: propertyId, p_starts: startsOn, p_ends: endsOn, p_placement: placement });
       if (error) return json({ error: error.message, code: error.code }, 400);
 
       const session = await stripe.checkout.sessions.create({

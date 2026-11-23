@@ -94,7 +94,9 @@ export default function MiPlan() {
           const current = sub?.plan_id === p.id;
           return (
             <article key={p.id} className={`card plan ${current ? "current" : ""}`}>
-              <h2>{p.name}</h2>
+              <h2>
+                {p.name} {p.id === "pro" && !current && <span className="badge draft">Recomendado</span>}
+              </h2>
               <p className="price">
                 {Number(p.price_mxn) === 0 ? "Gratis" : <>{mxn.format(Number(p.price_mxn))}<small> /mes</small></>}
               </p>

@@ -8,6 +8,7 @@ import { useMiLista } from "@/lib/bookmarks";
 
 type Creative = { id: string; display_name: string };
 type Row = ContactRequest & {
+  seen_at: string | null; // ZAI-35: cuándo la abrió quien la recibe
   property: { id: string; title: string } | null;
   creative: Creative | null;
   post: { id: string; title: string; creative: Creative | null } | null;
@@ -96,6 +97,13 @@ export default function MisSolicitudesPage() {
                 <p className="muted">
                   Enviada el {dateFmt.format(new Date(r.created_at))} desde <strong>{session.user.email ?? "tu cuenta"}</strong>
                 </p>
+                {r.status === "nueva" && (
+                  <p className="small">
+                    {r.seen_at
+                      ? `✓ ${r.kind === "visita" ? "El vendedor" : "El creativo"} ya la vio el ${dateFmt.format(new Date(r.seen_at))}.`
+                      : `${r.kind === "visita" ? "El vendedor" : "El creativo"} todavía no la abre.`}
+                  </p>
+                )}
                 {r.preferred_times && <p>Horario: {r.preferred_times}</p>}
                 {r.message && <p className="request-msg">“{r.message}”</p>}
               </li>

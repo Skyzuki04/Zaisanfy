@@ -66,7 +66,7 @@ strong, b { font-weight: 600; }
 .description { white-space: pre-line; line-height: 1.5; }
 
 /* Buscador */
-.search { display: grid; grid-template-columns: minmax(0, 2fr) repeat(4, minmax(0, 1fr)) auto; gap: 12px; align-items: end; }
+.search { display: grid; grid-template-columns: minmax(0, 2fr) repeat(5, minmax(0, 1fr)) auto; gap: 12px; align-items: end; }
 @media (max-width: 900px) { .search { grid-template-columns: 1fr 1fr; } .search label:first-child { grid-column: span 2; } }
 .search label { display: flex; flex-direction: column; gap: 4px; font-size: 0.85rem; font-weight: 500; }
 .search input, .search select { font: inherit; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; background: #fff; min-width: 0; }

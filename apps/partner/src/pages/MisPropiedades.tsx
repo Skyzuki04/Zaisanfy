@@ -70,7 +70,15 @@ export default function MisPropiedades() {
           ) : (
             <>
               {quota.published} de {quota.max_published} publicadas
-              {atLimit && <> · Llegaste al límite. Despublica una o <Link to="/plan">mejora tu plan</Link> para publicar más.</>}
+              {atLimit && quota.published === quota.max_published && (
+                <> · Llegaste al límite. Despublica una o <Link to="/plan">mejora tu plan</Link> para publicar más.</>
+              )}
+              {atLimit && quota.published > quota.max_published && (
+                <>
+                  {" "}· Tu plan ya no cubre todas: las que tienes siguen visibles, pero no podrás publicar otra hasta tener menos de {quota.max_published}.{" "}
+                  <Link to="/plan">Ver planes</Link>
+                </>
+              )}
             </>
           )}
         </p>
