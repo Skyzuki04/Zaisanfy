@@ -7,12 +7,12 @@ with esperado(tipo, nombre) as (
     ('tabla', 'property_photos'), ('tabla', 'post_images'),
     ('tabla', 'plans'), ('tabla', 'billing_customers'), ('tabla', 'subscriptions'), ('tabla', 'payments'),
     ('tabla', 'subscription_payments'), ('tabla', 'credit_movements'), ('tabla', 'lead_unlocks'),
-    ('tabla', 'ads'), ('tabla', 'ad_events'),
+    ('tabla', 'ads'), ('tabla', 'ad_events'), ('tabla', 'service_requests'),
     -- tipos (enums)
     ('tipo', 'property_status'), ('tipo', 'user_role'), ('tipo', 'post_category'),
     ('tipo', 'contact_status'), ('tipo', 'photo_kind'),
     ('tipo', 'subscription_status'), ('tipo', 'payment_status'), ('tipo', 'credit_reason'),
-    ('tipo', 'ad_placement'), ('tipo', 'ad_event_kind'),
+    ('tipo', 'ad_placement'), ('tipo', 'ad_event_kind'), ('tipo', 'service_status'),
     -- funciones
     ('funcion', 'set_updated_at'), ('funcion', 'handle_new_user'), ('funcion', 'my_role'),
     ('funcion', 'contact_requests_before_insert'), ('funcion', 'upgrade_role'),
@@ -23,12 +23,15 @@ with esperado(tipo, nombre) as (
     ('funcion', 'lead_price_mxn'), ('funcion', 'ad_price_per_day_mxn'), ('funcion', 'stripe_apply_subscription'), ('funcion', 'stripe_record_invoice'),
     ('funcion', 'stripe_record_payment'), ('funcion', 'stripe_save_customer'), ('funcion', 'my_subscription'), ('funcion', 'lead_is_locked'),
     ('funcion', 'unlock_lead_with_credit'), ('funcion', 'stripe_unlock_lead'), ('funcion', 'my_credit_history'), ('funcion', 'ad_quote'), ('funcion', 'stripe_create_ad'),
+    ('funcion', 'km_between'), ('funcion', 'service_is_near_me'), ('funcion', 'service_requests_before_insert'), ('funcion', 'accept_service'),
+    ('funcion', 'advance_service'), ('funcion', 'cancel_service'), ('funcion', 'nearby_services'),
     -- triggers
     ('trigger', 'properties.properties_set_updated_at'), ('trigger', 'profiles.profiles_set_updated_at'),
     ('trigger', 'creative_profiles.creative_profiles_set_updated_at'), ('trigger', 'creative_posts.creative_posts_set_updated_at'),
     ('trigger', 'contact_requests.contact_requests_set_updated_at'), ('trigger', 'contact_requests.contact_requests_before_insert'),
     ('trigger', 'subscriptions.subscriptions_set_updated_at'), ('trigger', 'payments.payments_set_updated_at'),
-    ('trigger', 'properties.properties_publish_limit')
+    ('trigger', 'properties.properties_publish_limit'),
+    ('trigger', 'service_requests.service_requests_set_updated_at'), ('trigger', 'service_requests.service_requests_before_insert')
 ),
 real(tipo, nombre, detalle) as (
   select 'tabla', c.relname, 'RLS ' || case when c.relrowsecurity then 'activado' else 'APAGADO' end

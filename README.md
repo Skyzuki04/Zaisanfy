@@ -77,6 +77,7 @@ Cada una tiene su prueba en [`supabase/tests`](supabase/tests): se corre igual, 
 | 0014 | `0014_stripe.sql` | ZAI-32 · funciones del webhook de Stripe (alta/cambio/cancelación del plan, cobro mensual con sus créditos, sin duplicar) y `my_subscription()` | `0014_prueba_stripe.sql` → `STRIPE OK` |
 | 0015 | `0015_paywall_leads.sql` | ZAI-33/34/35 · pay-wall: la cotización llega con el contacto oculto (el teléfono ya no se lee directo de la tabla); `unlock_lead_with_credit()`, desbloqueo pagado y `my_credit_history()` | `0015_prueba_paywall_leads.sql` → `PAYWALL OK` |
 | 0016 | `0016_compra_anuncios.sql` | ZAI-36 · `ad_quote()` (precio y reglas) y alta del anuncio pagado desde el webhook | `0016_prueba_compra_anuncios.sql` → `COMPRA ANUNCIOS OK` |
+| 0017 | `0017_fotografos.sql` | ZAI-39 · SRV-01: zona de trabajo del fotógrafo, `service_requests` (pedido → aceptado → en camino → terminado), solo un fotógrafo gana cada pedido; `nearby_services()` y avisos con Realtime | `0017_prueba_fotografos.sql` → `FOTOGRAFOS OK` |
 
 Pagos (Fase 3): cómo conectar Stripe y probarlo en [`docs/stripe.md`](docs/stripe.md).
 

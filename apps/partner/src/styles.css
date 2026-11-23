@@ -205,3 +205,9 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--g
 
 /* Comprar anuncio (ZAI-36) */
 .buy-ad { margin-bottom: 20px; }
+
+/* Fotógrafo 360 (ZAI-39) */
+.timeline { display: flex; gap: 6px; list-style: none; padding: 0; margin: 10px 0; flex-wrap: wrap; }
+.timeline li { font-size: 0.8rem; padding: 3px 10px; border-radius: 999px; background: #eef1f5; color: #667; }
+.timeline li.done { background: rgba(201,168,118,0.16); color: #7a5a2c; }
+.timeline li.now { background: #c9a876; color: #1a1408; font-weight: 600; }
