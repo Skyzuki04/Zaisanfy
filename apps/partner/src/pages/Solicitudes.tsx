@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { CONTACT_KIND_LABEL, CONTACT_STATUS_LABEL, ContactStatus, type InboxRow } from "@zaisanfy/schemas";
+import { CONTACT_KIND_LABEL, CONTACT_STATUS_LABEL, ContactStatus, type InboxRow, friendlyError } from "@zaisanfy/schemas";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../auth/AuthProvider";
 
@@ -19,7 +19,7 @@ export default function Solicitudes() {
 
   const load = useCallback(async () => {
     const { data, error } = await supabase.rpc("my_inbox");
-    if (error) setError(error.message);
+    if (error) setError(friendlyError(error));
     const list = ((data as unknown as Row[]) ?? []).sort((a, b) => ORDER[a.status] - ORDER[b.status]);
     setRows(list);
   }, []);
@@ -31,7 +31,7 @@ export default function Solicitudes() {
   async function changeStatus(id: string, status: ContactStatus) {
     setError(null);
     const { error } = await supabase.from("contact_requests").update({ status }).eq("id", id);
-    if (error) return setError(error.message);
+    if (error) return setError(friendlyError(error));
     setRows((rs) => rs && rs.map((r) => (r.id === id ? { ...r, status } : r)).sort((a, b) => ORDER[a.status] - ORDER[b.status]));
   }
 

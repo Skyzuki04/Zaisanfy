@@ -7,6 +7,9 @@ begin;
 insert into auth.users (id, email, raw_user_meta_data) values
   ('00000000-0000-0000-0000-00000000ab01', 'vendedor.a12@zaisanfy.test', '{"role": "vendedor"}');
 
+-- Plan Enterprise: publica sin límite (0013)
+insert into public.subscriptions (user_id, plan_id, status) values ('00000000-0000-0000-0000-00000000ab01', 'enterprise', 'activa');
+
 insert into public.properties (id, seller_id, status, title, operation, property_type, price, state, city, lat, lng) values
   -- CDMX: zona alrededor del Zócalo (19.4326, -99.1332)
   ('00000000-0000-0000-0000-0000000012a1', '00000000-0000-0000-0000-00000000ab01', 'published', 'CDMX dentro',   'venta', 'casa', 100, 'CDMX', 'Cuauhtémoc', 19.4300, -99.1400),

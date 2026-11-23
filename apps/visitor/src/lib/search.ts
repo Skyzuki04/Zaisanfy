@@ -1,4 +1,4 @@
-import { PropertyType, Operation, PROPERTY_SELECT, toProperty, type Property, type PropertyRow } from "@zaisanfy/schemas";
+import { PropertyType, Operation, PROPERTY_SELECT, toProperty, type Property, type PropertyRow, friendlyError } from "@zaisanfy/schemas";
 import { supabase } from "./supabase";
 import { MINUTES, type LatLng, type Minutes, type Zone } from "./isochrone";
 
@@ -83,6 +83,6 @@ export async function searchProperties(f: Filters, zone?: Zone): Promise<Propert
   if (f.min !== undefined) q = q.gte("price", f.min);
   if (f.max !== undefined) q = q.lte("price", f.max);
   const { data, error } = await q.order("created_at", { ascending: false }).limit(60);
-  if (error) throw new Error(error.message);
+  if (error) throw new Error(friendlyError(error));
   return ((data as unknown as PropertyRow[]) ?? []).map(toProperty);
 }

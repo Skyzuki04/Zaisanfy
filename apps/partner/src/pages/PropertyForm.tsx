@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { PROPERTY_SELECT, PropertyDataSchema, toProperty, toSavePropertyArgs, type Property, type PropertyData, type PropertyRow } from "@zaisanfy/schemas";
+import { PROPERTY_SELECT, PropertyDataSchema, toProperty, toSavePropertyArgs, type Property, type PropertyData, type PropertyRow, friendlyError } from "@zaisanfy/schemas";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../auth/AuthProvider";
 import { STATUS_LABEL } from "../lib/properties";
@@ -87,7 +87,7 @@ export default function PropertyForm() {
     setSaving(true);
     const { error } = await supabase.rpc("save_property", toSavePropertyArgs(isNew ? null : id!, parsed.data));
     setSaving(false);
-    if (error) return setSaveError(error.message);
+    if (error) return setSaveError(friendlyError(error));
     navigate("/propiedades", {
       state: { notice: isNew ? "Propiedad guardada como borrador. Cuando esté lista, dale “Publicar” para que aparezca en el Escaparate." : "Cambios guardados." },
     });

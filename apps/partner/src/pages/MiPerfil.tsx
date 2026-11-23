@@ -1,5 +1,5 @@
 import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
-import { CreativeProfileInputSchema, SPECIALTY_LABEL, type CreativeProfile } from "@zaisanfy/schemas";
+import { CreativeProfileInputSchema, SPECIALTY_LABEL, type CreativeProfile, friendlyError } from "@zaisanfy/schemas";
 import { Link } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../auth/AuthProvider";
@@ -71,7 +71,7 @@ export default function MiPerfil() {
       .upsert({ id: userId, ...parsed.data })
       .select()
       .single();
-    if (error) return setMessage({ ok: false, text: error.message });
+    if (error) return setMessage({ ok: false, text: friendlyError(error) });
     setCurrent(data as CreativeProfile);
     setMessage({ ok: true, text: "Perfil guardado" });
     setSaved(true);

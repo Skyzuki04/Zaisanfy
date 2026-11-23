@@ -7,6 +7,7 @@ import { signOut, useMiLista } from "@/lib/bookmarks";
 import { forgetAccount, useAccount } from "@/lib/role";
 import { browserSupabase } from "@/lib/supabase-browser";
 import ConsoleLink, { goToConsole } from "./ConsoleLink";
+import { friendlyError } from "@zaisanfy/schemas";
 
 const CONSOLE_LINK: Record<string, { path: string; label: string }> = {
   creativo: { path: "/perfil", label: "Mi perfil" },
@@ -26,7 +27,7 @@ export default function AccountLinks() {
     setUpgradeError(null);
     const sb = await browserSupabase();
     const { error } = await sb.rpc("upgrade_role", { new_role: newRole });
-    if (error) return setUpgradeError(error.message);
+    if (error) return setUpgradeError(friendlyError(error));
     if (userId) forgetAccount(userId);
     await goToConsole(newRole === "vendedor" ? "/propiedades" : "/perfil");
   }

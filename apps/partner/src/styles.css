@@ -186,3 +186,7 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--g
 .auth-alt { margin-top: 16px; font-size: 0.9rem; }
 .auth-page .auth-alt { color: #a3a39e; }
 .auth-page .auth-alt a { color: var(--gold); }
+
+/* Límite WIP del plan (Mis propiedades) */
+.quota { padding: 10px 16px; border-radius: 12px; border: 1px solid rgba(201,168,118,0.4); background: rgba(201,168,118,0.08); }
+.quota.full { border-color: var(--danger); background: #fbeeee; }

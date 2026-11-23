@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "../lib/supabase";
+import { friendlyError } from "@zaisanfy/schemas";
 
 // Fila de my_ad_stats(): un anuncio con sus vistas y clics
 type AdStats = {
@@ -34,7 +35,7 @@ export default function MisAnuncios() {
 
   useEffect(() => {
     supabase.rpc("my_ad_stats").then(({ data, error }) => {
-      if (error) setError(error.message);
+      if (error) setError(friendlyError(error));
       setRows(((data as AdStats[]) ?? []).map((r) => ({ ...r, impressions: Number(r.impressions), clicks: Number(r.clicks) })));
     });
   }, []);

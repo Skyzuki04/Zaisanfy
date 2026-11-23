@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { CONTACT_KIND_LABEL, CONTACT_STATUS_LABEL, type ContactRequest } from "@zaisanfy/schemas";
+import { CONTACT_KIND_LABEL, CONTACT_STATUS_LABEL, type ContactRequest, friendlyError } from "@zaisanfy/schemas";
 import { browserSupabase } from "@/lib/supabase-browser";
 import { useMiLista } from "@/lib/bookmarks";
 
@@ -32,7 +32,7 @@ export default function MisSolicitudesPage() {
           .order("created_at", { ascending: false }),
       )
       .then(({ data, error }) => {
-        if (error) setError(error.message);
+        if (error) setError(friendlyError(error));
         setRows((data as unknown as Row[]) ?? []);
       });
   }, [userId]);
