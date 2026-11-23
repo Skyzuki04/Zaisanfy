@@ -7,6 +7,10 @@ import { SignInSchema, SignUpSchema, type SignUpRole } from "@zaisanfy/schemas";
 import { browserSupabase } from "@/lib/supabase-browser";
 import { useAccount } from "@/lib/role";
 import { goToConsole } from "@/components/ConsoleLink";
+import Turnstile from "@/components/Turnstile";
+
+const captchaKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+const authMessage = (m: string) => (/captcha/i.test(m) ? "La verificación de robot falló. Intenta de nuevo." : m);
 
 export default function EntrarPage() {
   return (
@@ -59,6 +63,8 @@ function Entrar() {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [captcha, setCaptcha] = useState<string | null>(null);
+  const [captchaReset, setCaptchaReset] = useState(0);
   const isSocio = role === "vendedor" || role === "creativo" || role === "admin";
 
   useEffect(() => {
@@ -76,23 +82,25 @@ function Entrar() {
     setError(null);
     setNotice(null);
     const form = Object.fromEntries(new FormData(e.currentTarget));
+    if (captchaKey && !captcha) return setError("Completa la verificación de que no eres un robot.");
+    const captchaToken = captcha ?? undefined;
     const sb = await browserSupabase();
     setBusy(true);
     try {
       if (mode === "entrar") {
         const parsed = SignInSchema.safeParse(form);
         if (!parsed.success) return setError(parsed.error.issues[0].message);
-        const { error } = await sb.auth.signInWithPassword(parsed.data);
-        if (error) setError(error.message === "Invalid login credentials" ? "Correo o contraseña incorrectos" : error.message);
+        const { error } = await sb.auth.signInWithPassword({ ...parsed.data, options: { captchaToken } });
+        if (error) setError(error.message === "Invalid login credentials" ? "Correo o contraseña incorrectos" : authMessage(error.message));
       } else {
         const parsed = SignUpSchema.safeParse({ ...form, role: accountType });
         if (!parsed.success) return setError(parsed.error.issues[0].message);
         const { email, password, full_name, role } = parsed.data;
         const back = `${window.location.origin}/entrar${next ? `?next=${encodeURIComponent(next)}` : ""}`;
-        const { data, error } = await sb.auth.signUp({ email, password, options: { data: { role, full_name }, emailRedirectTo: back } });
+        const { data, error } = await sb.auth.signUp({ email, password, options: { data: { role, full_name }, emailRedirectTo: back, captchaToken } });
         // Con confirmación de correo, Supabase responde sin error y con identities vacío si el correo ya existe
         if (error?.message === "User already registered" || data.user?.identities?.length === 0) setError("Ese correo ya tiene una cuenta. Inicia sesión.");
-        else if (error) setError(error.message);
+        else if (error) setError(authMessage(error.message));
         else if (!data.session) {
           setNotice("Te mandamos un correo para confirmar tu cuenta. Ábrelo, confirma y después inicia sesión aquí.");
           setMode("entrar");
@@ -100,6 +108,7 @@ function Entrar() {
       }
     } finally {
       setBusy(false);
+      if (captchaKey) setCaptchaReset((n) => n + 1); // cada captcha sirve una sola vez
     }
   }
 
@@ -192,6 +201,7 @@ function Entrar() {
           </p>
         )}
         {notice && <p className="notice">{notice}</p>}
+        {captchaKey && <Turnstile siteKey={captchaKey} onToken={setCaptcha} resetKey={captchaReset} />}
         <button className="button primary" disabled={busy}>
           {busy ? "Un momento…" : mode === "entrar" ? "Entrar" : accountType === "visitante" ? "Crear cuenta" : "Crear cuenta de socio"}
         </button>

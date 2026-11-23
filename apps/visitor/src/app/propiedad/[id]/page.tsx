@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import ContactRequest from "@/components/ContactRequest";
+import ReportButton from "@/components/ReportButton";
 import { notFound } from "next/navigation";
 import { getPublishedProperty, orderedPhotos } from "@/lib/properties";
 import { formatPrice, TYPE_LABEL } from "@/lib/format";
@@ -59,6 +60,7 @@ export default async function PropertyPage({ params }: Props) {
       </p>
       <p className="price">{formatPrice(d)}{d.operation === "renta" ? " al mes" : ""}</p>
       <ContactRequest kind="visita" ownerId={property.seller_id} propertyId={property.id} operation={d.operation} label="Contactar al vendedor · Agendar visita" />
+      <ReportButton ownerId={property.seller_id} propertyId={property.id} />
 
       {d.media.panorama360Url ? (
         <section>

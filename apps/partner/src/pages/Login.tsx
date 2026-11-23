@@ -3,6 +3,9 @@ import { useState, type FormEvent } from "react";
 import { Navigate } from "react-router-dom";
 import { SignInSchema, SignUpSchema } from "@zaisanfy/schemas";
 import { useAuth } from "../auth/AuthProvider";
+import Turnstile from "../components/Turnstile";
+
+const captchaKey = import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined;
 
 const visitorUrl = import.meta.env.VITE_VISITOR_URL ?? "http://localhost:3000";
 
@@ -12,6 +15,8 @@ export default function Login() {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [captcha, setCaptcha] = useState<string | null>(null);
+  const [captchaReset, setCaptchaReset] = useState(0);
 
   if (session) return <Navigate to="/" replace />;
 
@@ -20,22 +25,25 @@ export default function Login() {
     setError(null);
     setNotice(null);
     const form = Object.fromEntries(new FormData(e.currentTarget));
+    if (captchaKey && !captcha) return setError("Completa la verificación de que no eres un robot.");
+    const captchaToken = captcha ?? undefined;
     setBusy(true);
     try {
       if (mode === "entrar") {
         const parsed = SignInSchema.safeParse(form);
         if (!parsed.success) return setError(parsed.error.issues[0].message);
-        const err = await signIn(parsed.data);
+        const err = await signIn(parsed.data, captchaToken);
         if (err) setError(err);
       } else {
         const parsed = SignUpSchema.safeParse(form);
         if (!parsed.success) return setError(parsed.error.issues[0].message);
-        const { error: err, needsConfirmation } = await signUp(parsed.data);
+        const { error: err, needsConfirmation } = await signUp(parsed.data, captchaToken);
         if (err) setError(err);
         else if (needsConfirmation) setNotice("Te mandamos un correo para confirmar tu cuenta. Después inicia sesión.");
       }
     } finally {
       setBusy(false);
+      if (captchaKey) setCaptchaReset((n) => n + 1); // cada captcha sirve una sola vez
     }
   }
 
@@ -92,6 +100,7 @@ export default function Login() {
           Contraseña
           <input name="password" type="password" autoComplete={mode === "entrar" ? "current-password" : "new-password"} required />
         </label>
+        {captchaKey && <Turnstile siteKey={captchaKey} onToken={setCaptcha} resetKey={captchaReset} />}
         {error && <p className="error">{error}</p>}
         {notice && <p className="notice">{notice}</p>}
         <button className="primary" disabled={busy}>

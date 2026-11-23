@@ -9,8 +9,8 @@ type AuthState = {
   session: Session | null;
   profile: Profile | null;
   loading: boolean;
-  signIn: (data: SignIn) => Promise<string | null>;
-  signUp: (data: SignUp) => Promise<{ error: string | null; needsConfirmation: boolean }>;
+  signIn: (data: SignIn, captchaToken?: string) => Promise<string | null>;
+  signUp: (data: SignUp, captchaToken?: string) => Promise<{ error: string | null; needsConfirmation: boolean }>;
   signOut: () => Promise<void>;
 };
 
@@ -61,15 +61,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     session,
     profile,
     loading,
-    async signIn({ email, password }) {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+    async signIn({ email, password }, captchaToken) {
+      const { error } = await supabase.auth.signInWithPassword({ email, password, options: { captchaToken } });
+      if (error && /captcha/i.test(error.message)) return "La verificación de robot falló. Intenta de nuevo.";
       return error ? "Correo o contraseña incorrectos" : null;
     },
-    async signUp({ email, password, full_name, role }) {
+    async signUp({ email, password, full_name, role }, captchaToken) {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: { data: { role, full_name } },
+        options: { data: { role, full_name }, captchaToken },
       });
       // Con confirmación de correo, Supabase responde sin error y con identities vacío si el correo ya existe
       if (error?.message === "User already registered" || data.user?.identities?.length === 0) {

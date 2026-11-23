@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import ContactRequest from "@/components/ContactRequest";
+import ReportButton from "@/components/ReportButton";
 import { notFound } from "next/navigation";
 import { CATEGORY_LABEL } from "@zaisanfy/schemas";
 import { getPost } from "@/lib/posts";
@@ -57,6 +58,7 @@ export default async function PostPage({ params }: Props) {
         </h2>
         <p className="muted">Pídele a {p.creative.display_name} una cotización para tu espacio.</p>
         <ContactRequest kind="cotizacion" ownerId={p.creative.id} creativeId={p.creative.id} postId={p.id} />
+        <ReportButton ownerId={p.creative.id} postId={p.id} />
       </section>
     </main>
   );

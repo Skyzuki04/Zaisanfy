@@ -434,3 +434,12 @@ button.primary:hover, .button.primary:hover { box-shadow: 0 10px 30px var(--glow
 .card .iso-minutes button.chip { border: 0; border-radius: 999px; padding: 6px 14px; color: var(--muted); }
 .card .iso-minutes button.chip.active { background: var(--gold-grad); color: var(--ink); }
 .iso-search > p { margin: 0; }
+
+/* Reportar (ZAI-33) */
+.report-link { display: inline-block; margin-top: 8px; background: none; border: 0; padding: 0; cursor: pointer; color: inherit; opacity: 0.6; text-decoration: underline; font-size: 0.85rem; }
+.report-link:hover { opacity: 1; }
+.report-form { display: grid; gap: 10px; margin-top: 10px; max-width: 420px; }
+.report-form label { display: grid; gap: 4px; }
+
+/* Captcha (ZAI-33) */
+.captcha { min-height: 65px; margin: 4px 0; }

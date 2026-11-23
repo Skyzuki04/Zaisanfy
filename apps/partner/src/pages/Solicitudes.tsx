@@ -6,7 +6,8 @@ import { useAuth } from "../auth/AuthProvider";
 import { mxn, paymentNotice, startCheckout } from "../lib/pay";
 
 // locked: cotización con el contacto oculto hasta desbloquearla (ZAI-33/34, migración 0015)
-type Row = InboxRow & { locked?: boolean; unlocked_at?: string | null };
+// seen_at: cuándo lo abrió por primera vez (ZAI-35, migración 0019)
+type Row = InboxRow & { locked?: boolean; unlocked_at?: string | null; seen_at?: string | null };
 
 const visitorUrl = import.meta.env.VITE_VISITOR_URL ?? "http://localhost:3000";
 const ORDER: Record<string, number> = { nueva: 0, contactado: 1, agendada: 2, cerrada: 3 };
@@ -19,6 +20,7 @@ export default function Solicitudes() {
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<"abiertas" | "todas">("abiertas");
   const [busy, setBusy] = useState<string | null>(null);
+  const [fresh, setFresh] = useState<Set<string>>(new Set());
   const [credits, setCredits] = useState<number>(0);
   const [leadPrice, setLeadPrice] = useState<number>(49);
   const location = useLocation();
@@ -29,6 +31,12 @@ export default function Solicitudes() {
     if (error) setError(friendlyError(error));
     const list = ((data as unknown as Row[]) ?? []).sort((a, b) => ORDER[a.status] - ORDER[b.status]);
     setRows(list);
+    // Al abrir la bandeja, los leads nuevos quedan como vistos (se siguen marcando "Nuevo" en esta visita)
+    const unseen = list.filter((r) => !r.seen_at).map((r) => r.id);
+    if (unseen.length > 0) {
+      setFresh((f) => new Set([...f, ...unseen]));
+      void supabase.rpc("mark_inbox_seen", { p_ids: unseen });
+    }
     const [c, p] = await Promise.all([supabase.rpc("my_credits"), supabase.rpc("lead_price_mxn")]);
     setCredits(Number(c.data ?? 0));
     if (p.data) setLeadPrice(Number(p.data));
@@ -142,6 +150,7 @@ export default function Solicitudes() {
                     ? <>Sobre: <a href={`${visitorUrl}/publicaciones/${r.post_id}`} target="_blank" rel="noreferrer">{r.post_title}</a></>
                     : "Desde tu perfil"}
               </h2>
+              {fresh.has(r.id) && <span className="badge draft lock-badge">Nuevo</span>}{" "}
               {r.locked && <span className="badge hidden lock-badge">🔒 Contacto bloqueado</span>}
               {r.unlocked_at && <span className="badge published lock-badge">Desbloqueado</span>}
               <dl className={`request-data ${r.locked ? "blurred" : ""}`}>
