@@ -24,6 +24,13 @@ begin
     raise exception 'Plan desconocido: %', p_plan;
   end if;
 
+  -- Solo una viva por usuario: si esta queda viva, la anterior (otro plan) se da por cancelada
+  if p_status in ('activa', 'en_prueba', 'pago_vencido') then
+    update public.subscriptions set status = 'cancelada'
+     where user_id = p_user and status in ('activa', 'en_prueba', 'pago_vencido')
+       and stripe_subscription_id is distinct from p_stripe_subscription;
+  end if;
+
   update public.subscriptions
      set plan_id = p_plan, status = p_status, current_period_start = p_period_start,
          current_period_end = p_period_end, cancel_at_period_end = p_cancel_at_period_end
@@ -31,11 +38,6 @@ begin
   returning id into v_id;
 
   if v_id is null then
-    -- Si ya tenía otra viva (por ejemplo cambió de Pro a Enterprise con un checkout nuevo), la anterior se cierra
-    if p_status in ('activa', 'en_prueba', 'pago_vencido') then
-      update public.subscriptions set status = 'cancelada'
-       where user_id = p_user and status in ('activa', 'en_prueba', 'pago_vencido');
-    end if;
     insert into public.subscriptions (user_id, plan_id, status, stripe_subscription_id,
                                       current_period_start, current_period_end, cancel_at_period_end)
     values (p_user, p_plan, p_status, p_stripe_subscription, p_period_start, p_period_end, p_cancel_at_period_end)

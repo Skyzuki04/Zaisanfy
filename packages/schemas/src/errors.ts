@@ -16,6 +16,22 @@ const DUPLICATE_BY_CONSTRAINT: Record<string, string> = {
   service_requests_one_open: "Ya tienes un fotógrafo pedido para esta propiedad.",
 };
 
+// Dato fuera de rango (23514): qué decir según la regla de la base que saltó
+const CHECK_BY_CONSTRAINT: Record<string, string> = {
+  properties_title_len: "El título debe tener entre 3 y 120 letras.",
+  properties_desc_len: "La descripción es de máximo 2000 caracteres.",
+  properties_price: "El precio debe ser mayor a 0.",
+  properties_bedrooms: "Las recámaras no pueden ser negativas.",
+  properties_bathrooms: "Los baños no pueden ser negativos.",
+  properties_area: "Los metros cuadrados deben ser mayores a 0.",
+  properties_state_len: "El estado es obligatorio.",
+  properties_city_len: "La ciudad es obligatoria.",
+  properties_lat: "La latitud va de -90 a 90.",
+  properties_lng: "La longitud va de -180 a 180.",
+  creative_profiles_service_radius_km_check: "El radio de trabajo va de 1 a 200 km.",
+  service_requests_address_check: "Escribe la dirección completa.",
+};
+
 // Mensajes en inglés que Postgres arma solo: esos nunca se muestran tal cual
 const POSTGRES_ENGLISH = /^(permission denied|new row violates|duplicate key|null value|insert or update|update or delete|value too long|invalid input)/i;
 
@@ -43,6 +59,10 @@ export function friendlyError(error: DbError, fallback = "Algo salió mal. Inten
   if (code === "23505") {
     const constraint = /constraint "([^"]+)"/.exec(text)?.[1];
     return (constraint && DUPLICATE_BY_CONSTRAINT[constraint]) ?? BY_CODE["23505"];
+  }
+  if (code === "23514") {
+    const constraint = /constraint "([^"]+)"/.exec(text)?.[1];
+    if (constraint && CHECK_BY_CONSTRAINT[constraint]) return CHECK_BY_CONSTRAINT[constraint];
   }
   // Mensajes que ya escribimos en español desde la base (raise exception '...')
   if ((code === "P0001" || code === "42501") && error.message && !POSTGRES_ENGLISH.test(error.message)) return error.message;

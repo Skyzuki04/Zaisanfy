@@ -68,8 +68,10 @@ export function hasFilters(f: Filters) {
 export async function searchProperties(f: Filters, zone?: Zone): Promise<Property[]> {
   let q = (zone ? supabase.rpc("properties_in_zone", { zone }).select(PROPERTY_SELECT) : supabase.from("properties").select(PROPERTY_SELECT))
     .eq("status", "published");
-  if (f.ubicacion) {
-    const like = `*${f.ubicacion}*`;
+  // Comas, paréntesis o asteriscos rompen el filtro "or" de Supabase (ej. "Zapopan, Jalisco"): se busca la primera parte
+  const ubicacion = f.ubicacion?.split(",")[0].replace(/[()*:%"\\]/g, " ").replace(/\s+/g, " ").trim();
+  if (ubicacion) {
+    const like = `*${ubicacion}*`;
     q = q.or(
       [
         `city.ilike.${like}`,

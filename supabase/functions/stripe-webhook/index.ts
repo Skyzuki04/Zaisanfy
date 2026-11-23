@@ -19,11 +19,29 @@ const STATUS: Record<string, string> = {
 
 const iso = (s: number | null | undefined) => (s ? new Date(s * 1000).toISOString() : null);
 
-async function applySubscription(sub: Stripe.Subscription) {
+async function applySubscription(subId: string) {
+  // Siempre se lee la versión actual en Stripe: los eventos pueden llegar desordenados o repetidos
+  const sub = await stripe.subscriptions.retrieve(subId);
   const userId = sub.metadata.user_id;
   const planId = sub.metadata.plan_id;
   if (!userId || !planId) throw new Error(`Suscripción ${sub.id} sin user_id/plan_id en metadata`);
-  const { error } = await admin().rpc("stripe_apply_subscription", {
+  const db = admin();
+
+  // Cambio de plan (Pro → Enterprise o al revés): la suscripción vieja se cancela en Stripe
+  // para que no se cobren las dos. Stripe luego avisa con customer.subscription.deleted.
+  if (sub.status === "active" || sub.status === "trialing") {
+    const { data: old } = await db
+      .from("subscriptions")
+      .select("stripe_subscription_id")
+      .eq("user_id", userId)
+      .in("status", ["activa", "en_prueba", "pago_vencido"])
+      .neq("stripe_subscription_id", sub.id);
+    for (const o of old ?? []) {
+      if (o.stripe_subscription_id) await stripe.subscriptions.cancel(o.stripe_subscription_id, { prorate: true }).catch((e) => console.error("cancelar vieja", e));
+    }
+  }
+
+  const { error } = await db.rpc("stripe_apply_subscription", {
     p_user: userId,
     p_plan: planId,
     p_stripe_subscription: sub.id,
@@ -41,14 +59,14 @@ async function handle(event: Stripe.Event) {
     case "customer.subscription.created":
     case "customer.subscription.updated":
     case "customer.subscription.deleted":
-      return applySubscription(event.data.object);
+      return applySubscription(event.data.object.id);
 
     case "invoice.paid": {
       const invoice = event.data.object;
       const subId = typeof invoice.subscription === "string" ? invoice.subscription : invoice.subscription?.id;
       if (!subId) return;
       // invoice.paid puede llegar antes que subscription.created: primero se asegura la suscripción
-      await applySubscription(await stripe.subscriptions.retrieve(subId));
+      await applySubscription(subId);
       const { error } = await db.rpc("stripe_record_invoice", {
         p_stripe_subscription: subId,
         p_amount_mxn: toMxn(invoice.amount_paid),

@@ -11,7 +11,7 @@ type Quota = { plan_id: string; plan_name: string; max_published: number | null;
 const visitorUrl = import.meta.env.VITE_VISITOR_URL ?? "http://localhost:3000";
 
 export default function MisPropiedades() {
-  const { session } = useAuth();
+  const { session, profile } = useAuth();
   const userId = session!.user.id;
   const [rows, setRows] = useState<Property[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -62,7 +62,7 @@ export default function MisPropiedades() {
           + Nueva propiedad
         </Link>
       </div>
-      {quota && (
+      {quota && profile?.role === "vendedor" && (
         <p className={`quota ${atLimit ? "full" : ""}`} role="status">
           Plan <strong>{quota.plan_name}</strong>:{" "}
           {quota.max_published === null ? (
