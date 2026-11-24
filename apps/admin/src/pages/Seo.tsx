@@ -13,7 +13,7 @@ function color(score: number) {
   return "var(--danger, #b42318)";
 }
 
-export default function AdminSeo() {
+export default function Seo() {
   const [rows, setRows] = useState<Row[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [kind, setKind] = useState<Row["kind"]>("propiedad");

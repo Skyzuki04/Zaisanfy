@@ -6,6 +6,7 @@
   "scripts": {
     "dev:visitor": "npm run dev -w apps/visitor",
     "dev:partner": "npm run dev -w apps/partner",
+    "dev:admin": "npm run dev -w apps/admin",
     "build": "npm run build --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present"
   }

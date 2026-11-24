@@ -43,10 +43,6 @@ export default function Layout() {
           {role === "creativo" && <NavLink to="/perfil">Mi perfil</NavLink>}
           {role === "creativo" && <NavLink to="/portafolio">Mi portafolio</NavLink>}
           {role !== "visitante" && <NavLink to="/solicitudes">Solicitudes</NavLink>}
-          {role === "admin" && <NavLink to="/reportes">Reportes</NavLink>}
-          {role === "admin" && <NavLink to="/admin/usuarios">Usuarios</NavLink>}
-          {role === "admin" && <NavLink to="/admin/seo">SEO</NavLink>}
-          {role === "admin" && <NavLink to="/admin/metricas">Métricas</NavLink>}
           {role === "vendedor" && <NavLink to="/fotografos">Fotógrafo 360</NavLink>}
           {role === "creativo" && <NavLink to="/fotografos">Trabajos 360</NavLink>}
           {(role === "vendedor" || role === "creativo") && <NavLink to="/plan">Mi plan</NavLink>}

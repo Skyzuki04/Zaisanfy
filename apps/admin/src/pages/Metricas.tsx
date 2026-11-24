@@ -19,7 +19,7 @@ type Month = {
 const mxn = new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN", maximumFractionDigits: 0 });
 const monthFmt = new Intl.DateTimeFormat("es-MX", { month: "long", year: "numeric", timeZone: "UTC" });
 
-export default function AdminMetricas() {
+export default function Metricas() {
   const [rows, setRows] = useState<Month[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 

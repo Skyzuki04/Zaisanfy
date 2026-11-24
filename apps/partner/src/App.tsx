@@ -11,10 +11,6 @@ import MiPortafolio from "./pages/MiPortafolio";
 import PostForm from "./pages/PostForm";
 import MiPlan from "./pages/MiPlan";
 import Fotografos from "./pages/Fotografos";
-import Reportes from "./pages/Reportes";
-import AdminUsuarios from "./pages/AdminUsuarios";
-import AdminSeo from "./pages/AdminSeo";
-import AdminMetricas from "./pages/AdminMetricas";
 
 export default function App() {
   return (
@@ -69,38 +65,6 @@ export default function App() {
               element={
                 <RequireRole roles={["vendedor", "creativo"]}>
                   <MiPlan />
-                </RequireRole>
-              }
-            />
-            <Route
-              path="/reportes"
-              element={
-                <RequireRole roles={["admin"]}>
-                  <Reportes />
-                </RequireRole>
-              }
-            />
-            <Route
-              path="/admin/usuarios"
-              element={
-                <RequireRole roles={["admin"]}>
-                  <AdminUsuarios />
-                </RequireRole>
-              }
-            />
-            <Route
-              path="/admin/seo"
-              element={
-                <RequireRole roles={["admin"]}>
-                  <AdminSeo />
-                </RequireRole>
-              }
-            />
-            <Route
-              path="/admin/metricas"
-              element={
-                <RequireRole roles={["admin"]}>
-                  <AdminMetricas />
                 </RequireRole>
               }
             />

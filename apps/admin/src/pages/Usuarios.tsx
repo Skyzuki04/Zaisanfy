@@ -34,7 +34,7 @@ const ROLES: UserRole[] = ["visitante", "vendedor", "creativo", "admin"];
 const dateFmt = new Intl.DateTimeFormat("es-MX", { day: "numeric", month: "short", year: "numeric" });
 const mxn = new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN", maximumFractionDigits: 0 });
 
-export default function AdminUsuarios() {
+export default function Usuarios() {
   const [search, setSearch] = useState("");
   const [users, setUsers] = useState<User[] | null>(null);
   const [error, setError] = useState<string | null>(null);
