@@ -14,7 +14,7 @@ export type RoutePlan = {
   totalSeconds: number;
   totalMeters: number;
   mapsUrl: string;
-  source: "google" | "estimado";
+  source: "google" | "ors" | "estimado";
   skipped: { id: string; title: string }[]; // sin ubicación suficiente para la ruta
 };
 
@@ -62,7 +62,45 @@ async function googleMatrix(key: string, origin: Point, stops: Stop[]): Promise<
   return { seconds, meters };
 }
 
-// --- Sin llave de Google: estimado por línea recta ---
+// --- Gratis y sin tarjeta: OpenRouteService (matriz de tiempos + buscar direcciones) ---
+// https://openrouteservice.org/dev/#/api-docs/v2/matrix
+const ORS = "https://api.openrouteservice.org";
+
+async function orsGeocode(key: string, address: string): Promise<{ lat: number; lng: number } | null> {
+  const url = new URL(`${ORS}/geocode/search`);
+  url.searchParams.set("api_key", key);
+  url.searchParams.set("text", address);
+  url.searchParams.set("boundary.country", "MX");
+  url.searchParams.set("size", "1");
+  const res = await fetch(url, { next: { revalidate: 86400 } });
+  if (!res.ok) throw new Error(`OpenRouteService (direcciones) respondió ${res.status}`);
+  const json = (await res.json()) as { features?: { geometry?: { coordinates?: [number, number] } }[] };
+  const c = json.features?.[0]?.geometry?.coordinates;
+  return c ? { lat: c[1], lng: c[0] } : null;
+}
+
+async function orsMatrix(key: string, origin: { lat: number; lng: number }, stops: { lat: number; lng: number }[]): Promise<Matrix> {
+  const rows = [origin, ...stops];
+  const res = await fetch(`${ORS}/v2/matrix/driving-car`, {
+    method: "POST",
+    headers: { Authorization: key, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      locations: rows.map((p) => [p.lng, p.lat]),
+      sources: rows.map((_, i) => i),
+      destinations: stops.map((_, i) => i + 1),
+      metrics: ["duration", "distance"],
+    }),
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error(`OpenRouteService respondió ${res.status}`);
+  const json = (await res.json()) as { durations: (number | null)[][]; distances: (number | null)[][] };
+  return {
+    seconds: json.durations.map((r) => r.map((v) => (v === null ? Infinity : Math.round(v)))),
+    meters: json.distances.map((r) => r.map((v) => (v === null ? Infinity : Math.round(v)))),
+  };
+}
+
+// --- Sin llaves: estimado por línea recta ---
 const ROAD_FACTOR = 1.35; // las calles no van en línea recta
 const CITY_KMH = 30; // velocidad promedio en ciudad
 
@@ -124,24 +162,38 @@ function mapsUrl(origin: Point, ordered: Stop[]) {
 
 export class RouteError extends Error {}
 
-export async function planRoute(origin: Point, properties: Property[], googleKey?: string): Promise<RoutePlan> {
-  const source = googleKey ? "google" : "estimado";
+export type RouteKeys = { google?: string; ors?: string };
+
+export async function planRoute(origin: Point, properties: Property[], keys: RouteKeys = {}): Promise<RoutePlan> {
+  // Google si hay llave; si no, OpenRouteService (gratis); si no, estimado en línea recta
+  const source: RoutePlan["source"] = keys.google ? "google" : keys.ors ? "ors" : "estimado";
   const skipped: RoutePlan["skipped"] = [];
   const stops: Stop[] = [];
   for (const p of properties) {
-    const point = propertyPoint(p);
+    let point = propertyPoint(p);
+    // OpenRouteService convierte la dirección escrita en coordenadas
+    if (point && !hasCoords(point) && source === "ors") point = await orsGeocode(keys.ors!, point.address);
     // sin Google solo se pueden usar coordenadas
-    if (point && (googleKey || hasCoords(point))) stops.push({ id: p.id, title: p.data.title, point });
+    if (point && (source === "google" || hasCoords(point))) stops.push({ id: p.id, title: p.data.title, point });
     else skipped.push({ id: p.id, title: p.data.title });
   }
   if (stops.length === 0) throw new RouteError("Ninguna de las propiedades elegidas tiene ubicación exacta para trazar la ruta.");
-  if (!googleKey && !hasCoords(origin)) {
-    throw new RouteError("Para salir de una dirección escrita hace falta Google Maps. Usa tu ubicación actual.");
+  if (!hasCoords(origin) && source === "ors") {
+    const found = await orsGeocode(keys.ors!, origin.address);
+    if (!found) throw new RouteError("No encontramos esa dirección. Escríbela con colonia y ciudad, o usa tu ubicación actual.");
+    origin = found;
+  }
+  if (source === "estimado" && !hasCoords(origin)) {
+    throw new RouteError("Para salir de una dirección escrita hace falta configurar los mapas. Usa tu ubicación actual.");
   }
 
-  const matrix = googleKey
-    ? await googleMatrix(googleKey, origin, stops)
-    : estimatedMatrix(origin as { lat: number; lng: number }, stops.map((s) => s.point as { lat: number; lng: number }));
+  const coords = () => stops.map((s) => s.point as { lat: number; lng: number });
+  const matrix =
+    source === "google"
+      ? await googleMatrix(keys.google!, origin, stops)
+      : source === "ors"
+        ? await orsMatrix(keys.ors!, origin as { lat: number; lng: number }, coords())
+        : estimatedMatrix(origin as { lat: number; lng: number }, coords());
 
   const order = bestOrder(matrix.seconds);
   if (!order) throw new RouteError("No encontramos un camino en auto entre tu punto de salida y estas propiedades.");

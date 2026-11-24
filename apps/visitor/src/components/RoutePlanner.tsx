@@ -162,7 +162,7 @@ export default function RoutePlanner({ properties, accessToken }: { properties: 
         <div className="route-result" aria-live="polite">
           <p className="route-total">
             <strong>{formatDuration(plan.totalSeconds)}</strong> · {formatDistance(plan.totalMeters)}
-            <span className="muted small"> {plan.source === "google" ? "en auto, estimado por Google" : "aproximado en línea recta (Google Maps te dará el tiempo exacto)"}</span>
+            <span className="muted small"> {plan.source === "estimado" ? "aproximado en línea recta (Google Maps te dará el tiempo exacto)" : "en auto, según las calles"}</span>
           </p>
           <p className="muted small">Salida: {origin.mode === "gps" ? "tu ubicación actual" : origin.address}</p>
           <ol className="route-legs">

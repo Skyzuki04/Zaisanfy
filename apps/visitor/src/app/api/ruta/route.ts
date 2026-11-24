@@ -3,7 +3,7 @@ import { PROPERTY_SELECT, toProperty, type PropertyRow } from "@zaisanfy/schemas
 import { supabase } from "@/lib/supabase";
 import { MAX_STOPS, planRoute, RouteError, type Point } from "@/lib/route-plan";
 
-// RF-VIS-05: ruta optimizada por Mi Lista. La llave de Google se queda en el servidor.
+// RF-VIS-05: ruta optimizada por Mi Lista. Las llaves de mapas se quedan en el servidor.
 type Body = { origin?: { lat?: unknown; lng?: unknown; address?: unknown }; propertyIds?: unknown };
 
 const fail = (error: string, status = 400) => NextResponse.json({ error }, { status });
@@ -19,7 +19,7 @@ function parseOrigin(o: Body["origin"]): Point | null {
 }
 
 export async function POST(req: NextRequest) {
-  // Solo con sesión (Mi Lista es de cuentas): evita que cualquiera gaste la llave de Google
+  // Solo con sesión (Mi Lista es de cuentas): evita que cualquiera gaste la llave de mapas
   const token = req.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
   const { data: auth } = token ? await supabase.auth.getUser(token) : { data: { user: null } };
   if (!auth.user) return fail("Inicia sesión para planear tu ruta", 401);
@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
   if (properties.length === 0) return fail("Esas propiedades ya no están disponibles.");
 
   try {
-    return NextResponse.json(await planRoute(origin, properties, process.env.GOOGLE_MAPS_API_KEY || undefined));
+    return NextResponse.json(await planRoute(origin, properties, { google: process.env.GOOGLE_MAPS_API_KEY || undefined, ors: process.env.ORS_API_KEY || undefined }));
   } catch (e) {
     if (e instanceof RouteError) return fail(e.message, 422);
     console.error("ruta", e);
