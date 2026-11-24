@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { CATEGORY_LABEL, POST_IMAGES_SELECT, toPost, type CreativePost, type CreativePostRow } from "@zaisanfy/schemas";
+import { CATEGORY_LABEL, POST_IMAGES_SELECT, toPost, type CreativePost, type CreativePostRow, friendlyError } from "@zaisanfy/schemas";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../auth/AuthProvider";
 import { withSession } from "../components/Layout";
@@ -22,7 +22,7 @@ export default function MiPortafolio() {
       supabase.from("creative_posts").select(`*, ${POST_IMAGES_SELECT}`).eq("creative_id", userId).order("created_at", { ascending: false }),
     ]);
     setHasProfile(!!prof);
-    if (error) setError(error.message);
+    if (error) setError(friendlyError(error));
     setRows(((data as CreativePostRow[]) ?? []).map((r) => toPost(r) as CreativePost));
   }, [userId]);
 
@@ -33,7 +33,7 @@ export default function MiPortafolio() {
   async function remove(p: CreativePost) {
     if (!window.confirm(`¿Borrar "${p.title}"? No se puede deshacer.`)) return;
     const { error } = await supabase.from("creative_posts").delete().eq("id", p.id);
-    if (error) setError(error.message);
+    if (error) setError(friendlyError(error));
     else setNotice(`Se borró “${p.title}”.`);
     load();
   }

@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { PROPERTY_SELECT, PropertyDataSchema, toProperty, toSavePropertyArgs, type Property, type PropertyData, type PropertyRow } from "@zaisanfy/schemas";
+import { PROPERTY_SELECT, PropertyDataSchema, toProperty, toSavePropertyArgs, type Property, type PropertyData, type PropertyRow, friendlyError } from "@zaisanfy/schemas";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../auth/AuthProvider";
 import { STATUS_LABEL } from "../lib/properties";
@@ -55,6 +55,8 @@ export default function PropertyForm() {
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setSaveError(null);
+    // "Guardar y publicar" hace las 2 cosas de un jalón (antes eran 2 pasos)
+    const publish = ((e.nativeEvent as SubmitEvent).submitter as HTMLButtonElement | null)?.name === "publish";
     const f = new FormData(e.currentTarget);
     const candidate = {
       title: text(f.get("title")) ?? "",
@@ -85,9 +87,24 @@ export default function PropertyForm() {
     }
     setErrors({});
     setSaving(true);
-    const { error } = await supabase.rpc("save_property", toSavePropertyArgs(isNew ? null : id!, parsed.data));
+    const { data: savedId, error } = await supabase.rpc("save_property", toSavePropertyArgs(isNew ? null : id!, parsed.data));
+    if (error) {
+      setSaving(false);
+      return setSaveError(friendlyError(error));
+    }
+    if (publish) {
+      const { error: pubError } = await supabase.from("properties").update({ status: "published" }).eq("id", (savedId as string) ?? id);
+      setSaving(false);
+      navigate("/propiedades", {
+        state: {
+          notice: pubError
+            ? `Se guardó, pero no se publicó: ${friendlyError(pubError)}`
+            : "¡Publicada! Ya aparece en el Escaparate.",
+        },
+      });
+      return;
+    }
     setSaving(false);
-    if (error) return setSaveError(error.message);
     navigate("/propiedades", {
       state: { notice: isNew ? "Propiedad guardada como borrador. Cuando esté lista, dale “Publicar” para que aparezca en el Escaparate." : "Cambios guardados." },
     });
@@ -117,7 +134,7 @@ export default function PropertyForm() {
           Estado actual: <span className={`badge ${property.status}`}>{STATUS_LABEL[property.status]}</span> (se cambia desde la lista)
         </p>
       )}
-      {isNew && <p className="muted">Se guarda como borrador. La publicas desde la lista cuando esté lista.</p>}
+      {isNew && <p className="muted">Guárdala como borrador para terminarla después, o publícala de una vez.</p>}
       <form onSubmit={onSubmit} className="card form grid" noValidate>
         <label className="span2">
           Título *
@@ -207,8 +224,13 @@ export default function PropertyForm() {
         {Object.keys(errors).length > 0 && <p className="error span2">Revisa los campos marcados.</p>}
         {saveError && <p className="error span2">{saveError}</p>}
         <div className="span2 row">
-          <button className="primary" disabled={saving}>
-            {saving ? "Guardando…" : "Guardar"}
+          {property?.status !== "published" && property?.status !== "hidden" && (
+            <button className="primary" name="publish" value="1" disabled={saving}>
+              {saving ? "Guardando…" : "Guardar y publicar"}
+            </button>
+          )}
+          <button className={property?.status === "published" ? "primary" : ""} name="save" disabled={saving}>
+            {saving ? "Guardando…" : isNew ? "Guardar como borrador" : "Guardar cambios"}
           </button>
           <Link to="/propiedades">Cancelar</Link>
         </div>

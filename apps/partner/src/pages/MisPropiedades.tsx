@@ -1,19 +1,22 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { PROPERTY_SELECT, toProperty, type Property, type PropertyRow, type PropertyStatus } from "@zaisanfy/schemas";
+import { PROPERTY_SELECT, toProperty, type Property, type PropertyRow, type PropertyStatus, friendlyError } from "@zaisanfy/schemas";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../auth/AuthProvider";
 import { withSession } from "../components/Layout";
 import { ALL_STATUSES, STATUS_ACTION, STATUS_LABEL, formatPrice } from "../lib/properties";
 
+type Quota = { plan_id: string; plan_name: string; max_published: number | null; published: number };
+
 const visitorUrl = import.meta.env.VITE_VISITOR_URL ?? "http://localhost:3000";
 
 export default function MisPropiedades() {
-  const { session } = useAuth();
+  const { session, profile } = useAuth();
   const userId = session!.user.id;
   const [rows, setRows] = useState<Property[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const location = useLocation();
+  const [quota, setQuota] = useState<Quota | null>(null);
   const [notice, setNotice] = useState<string | null>((location.state as { notice?: string } | null)?.notice ?? null);
 
   const load = useCallback(async () => {
@@ -22,8 +25,11 @@ export default function MisPropiedades() {
       .select(PROPERTY_SELECT)
       .eq("seller_id", userId)
       .order("updated_at", { ascending: false });
-    if (error) setError(error.message);
+    if (error) setError(friendlyError(error));
     setRows(((data as unknown as PropertyRow[]) ?? []).map(toProperty));
+    // Límite WIP del plan: cuántas puede tener publicadas a la vez (0013)
+    const { data: q } = await supabase.rpc("my_publish_quota").maybeSingle();
+    setQuota((q as Quota | null) ?? null);
   }, [userId]);
 
   useEffect(() => {
@@ -31,8 +37,9 @@ export default function MisPropiedades() {
   }, [load]);
 
   async function changeStatus(id: string, status: PropertyStatus) {
+    setError(null);
     const { error } = await supabase.from("properties").update({ status }).eq("id", id);
-    if (error) setError(error.message);
+    if (error) setError(friendlyError(error));
     else setNotice(status === "published" ? "Publicada. Ya aparece en el Escaparate." : `Ahora está como “${STATUS_LABEL[status]}”.`);
     load();
   }
@@ -40,10 +47,12 @@ export default function MisPropiedades() {
   async function remove(p: Property) {
     if (!window.confirm(`¿Borrar "${p.data.title}"? No se puede deshacer.`)) return;
     const { error } = await supabase.from("properties").delete().eq("id", p.id);
-    if (error) setError(error.message);
+    if (error) setError(friendlyError(error));
     else setNotice(`Se borró “${p.data.title}”.`);
     load();
   }
+
+  const atLimit = !!quota && quota.max_published !== null && quota.published >= quota.max_published;
 
   return (
     <section>
@@ -53,6 +62,27 @@ export default function MisPropiedades() {
           + Nueva propiedad
         </Link>
       </div>
+      {quota && profile?.role === "vendedor" && (
+        <p className={`quota ${atLimit ? "full" : ""}`} role="status">
+          Plan <strong>{quota.plan_name}</strong>:{" "}
+          {quota.max_published === null ? (
+            <>{quota.published} publicadas (sin límite)</>
+          ) : (
+            <>
+              {quota.published} de {quota.max_published} publicadas
+              {atLimit && quota.published === quota.max_published && (
+                <> · Llegaste al límite. Despublica una o <Link to="/plan">mejora tu plan</Link> para publicar más.</>
+              )}
+              {atLimit && quota.published > quota.max_published && (
+                <>
+                  {" "}· Tu plan ya no cubre todas: las que tienes siguen visibles, pero no podrás publicar otra hasta tener menos de {quota.max_published}.{" "}
+                  <Link to="/plan">Ver planes</Link>
+                </>
+              )}
+            </>
+          )}
+        </p>
+      )}
       {error && <p className="error">{error}</p>}
       {notice && (
         <p className="flash" role="status">
@@ -106,7 +136,12 @@ export default function MisPropiedades() {
                     </a>
                   )}
                   {ALL_STATUSES.filter((s) => s !== p.status).map((s) => (
-                    <button key={s} onClick={() => changeStatus(p.id, s)} className="small">
+                    <button
+                      key={s}
+                      onClick={() => changeStatus(p.id, s)}
+                      className="small"
+                      title={s === "published" && atLimit ? "Llegaste al límite de publicaciones de tu plan" : undefined}
+                    >
                       {STATUS_ACTION[s]}
                     </button>
                   ))}

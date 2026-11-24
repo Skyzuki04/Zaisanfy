@@ -10,6 +10,7 @@ import {
   toSavePostArgs,
   type CreativePost,
   type CreativePostRow,
+  friendlyError,
 } from "@zaisanfy/schemas";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../auth/AuthProvider";
@@ -109,7 +110,7 @@ export default function PostForm() {
     setSaving(true);
     const { error } = await supabase.rpc("save_post", toSavePostArgs(isNew ? null : id!, parsed.data));
     setSaving(false);
-    if (error) return setErrors({ form: error.message });
+    if (error) return setErrors({ form: friendlyError(error) });
     navigate("/portafolio", { state: { notice: isNew ? "Publicación creada. Ya aparece en tu perfil y en el muro." : "Cambios guardados." } });
   }
 

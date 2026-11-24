@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { CONTACT_KIND_LABEL, CONTACT_STATUS_LABEL, type ContactRequest } from "@zaisanfy/schemas";
+import { CONTACT_KIND_LABEL, CONTACT_STATUS_LABEL, type ContactRequest, friendlyError, CONTACT_SELECT, contactKind } from "@zaisanfy/schemas";
 import { browserSupabase } from "@/lib/supabase-browser";
 import { useMiLista } from "@/lib/bookmarks";
 
 type Creative = { id: string; display_name: string };
 type Row = ContactRequest & {
+  seen_at: string | null; // ZAI-35: cuándo la abrió quien la recibe
   property: { id: string; title: string } | null;
   creative: Creative | null;
   post: { id: string; title: string; creative: Creative | null } | null;
@@ -27,13 +28,13 @@ export default function MisSolicitudesPage() {
       .then((sb) =>
         sb
           .from("contact_requests")
-          .select("*, kind, property:properties(id, title), creative:creative_profiles(id, display_name), post:creative_posts(id, title, creative:creative_profiles(id, display_name))")
+          .select(`${CONTACT_SELECT}, property:properties(id, title), creative:creative_profiles(id, display_name), post:creative_posts(id, title, creative:creative_profiles(id, display_name))`)
           .eq("requester_id", userId)
           .order("created_at", { ascending: false }),
       )
       .then(({ data, error }) => {
-        if (error) setError(error.message);
-        setRows((data as unknown as Row[]) ?? []);
+        if (error) setError(friendlyError(error));
+        setRows(((data as unknown as Row[]) ?? []).map((r) => ({ ...r, kind: contactKind(r) })));
       });
   }, [userId]);
 
@@ -96,6 +97,13 @@ export default function MisSolicitudesPage() {
                 <p className="muted">
                   Enviada el {dateFmt.format(new Date(r.created_at))} desde <strong>{session.user.email ?? "tu cuenta"}</strong>
                 </p>
+                {r.status === "nueva" && (
+                  <p className="small">
+                    {r.seen_at
+                      ? `✓ ${r.kind === "visita" ? "El vendedor" : "El creativo"} ya la vio el ${dateFmt.format(new Date(r.seen_at))}.`
+                      : `${r.kind === "visita" ? "El vendedor" : "El creativo"} todavía no la abre.`}
+                  </p>
+                )}
                 {r.preferred_times && <p>Horario: {r.preferred_times}</p>}
                 {r.message && <p className="request-msg">“{r.message}”</p>}
               </li>

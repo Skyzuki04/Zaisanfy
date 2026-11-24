@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ContactRequestInputSchema, type ContactKind } from "@zaisanfy/schemas";
+import { ContactRequestInputSchema, type ContactKind, friendlyError } from "@zaisanfy/schemas";
 import { browserSupabase } from "@/lib/supabase-browser";
 import { signOut, useMiLista } from "@/lib/bookmarks";
 import { useAccount } from "@/lib/role";
@@ -90,7 +90,7 @@ export default function ContactRequest({ kind, ownerId, propertyId, creativeId, 
     const { kind: _kind, ...row } = parsed.data;
     const { error } = await sb.from("contact_requests").insert(row);
     setBusy(false);
-    if (error) return setError(error.message || "No se pudo enviar. Intenta de nuevo.");
+    if (error) return setError(friendlyError(error, "No se pudo enviar. Intenta de nuevo."));
     setSent(true);
   }
 

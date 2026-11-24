@@ -78,7 +78,7 @@ declare r public.contact_requests;
 begin
   insert into public.contact_requests (creative_id, post_id)
   values ('00000000-0000-0000-0000-00000000a803', (select id from public.creative_posts where title = 'Render 3FN'))
-  returning * into r;
+  returning id, property_id, creative_id, post_id, requester_id into r.id, r.property_id, r.creative_id, r.post_id, r.requester_id; -- el teléfono no se lee (0015)
   if r.creative_id is not null or r.post_id is null then raise exception 'FALLA: la cotización no quedó ligada solo a la publicación'; end if;
   if public.request_recipient(r.property_id, r.creative_id, r.post_id) <> '00000000-0000-0000-0000-00000000a803' then
     raise exception 'FALLA: la cotización no le llega al creativo';
@@ -94,7 +94,7 @@ end $$;
 select set_config('request.jwt.claims', '{"sub": "00000000-0000-0000-0000-00000000a803", "role": "authenticated"}', true);
 
 do $$ begin
-  if not exists (select 1 from public.my_inbox() where post_title = 'Render 3FN' and requester_name = 'Cliente Ocho') then
+  if not exists (select 1 from public.my_inbox() where post_title = 'Render 3FN' and requester_name = 'C••••••' and requester_email is null and locked) then -- pay-wall (0015)
     raise exception 'FALLA: el creativo no ve la cotización en su bandeja';
   end if;
 end $$;
