@@ -779,7 +779,7 @@ insert into public.payments (id, user_id, amount_mxn, status) values
 insert into public.subscription_payments (payment_id, subscription_id) values ('00000000-0000-0000-0000-0000000009b1', '00000000-0000-0000-0000-0000000009a1');
 insert into public.credit_movements (user_id, amount, reason) values ('00000000-0000-0000-0000-00000000a901', 10, 'plan');
 insert into public.ads (id, property_id, placement, starts_on, ends_on, payment_id) values
-  ('00000000-0000-0000-0000-0000000009c1', '00000000-0000-0000-0000-0000000009f1', 'buscador', current_date, current_date + 7, '00000000-0000-0000-0000-0000000009b2');
+  ('00000000-0000-0000-0000-0000000009c1', '00000000-0000-0000-0000-0000000009f1', 'buscador', current_date - 1, current_date + 7, '00000000-0000-0000-0000-0000000009b2');
 
 do $$ begin
   begin
