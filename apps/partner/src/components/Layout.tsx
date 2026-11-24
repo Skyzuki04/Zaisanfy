@@ -4,7 +4,7 @@ import type { Session } from "@supabase/supabase-js";
 import type { UserRole } from "@zaisanfy/schemas";
 import { useAuth } from "../auth/AuthProvider";
 import Logo from "./Logo";
-import { supabase } from "../lib/supabase";
+import { endImpersonation, isImpersonating, supabase } from "../lib/supabase";
 
 const visitorUrl = import.meta.env.VITE_VISITOR_URL ?? "http://localhost:3000";
 
@@ -60,6 +60,12 @@ export default function Layout() {
           </button>
         </span>
       </header>
+      {isImpersonating() && (
+        <div className="impersonating" role="alert">
+          Modo admin: estás dentro de la cuenta de <strong>{profile.full_name ?? session.user.email}</strong>. Todo lo que hagas se hace como este usuario.{" "}
+          <button className="link" onClick={() => { endImpersonation(); signOut(); }}>Salir de su cuenta</button>
+        </div>
+      )}
       <main className="content">
         {suspended ? (
           <div className="card empty-state">

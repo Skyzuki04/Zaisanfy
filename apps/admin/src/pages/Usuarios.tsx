@@ -3,7 +3,7 @@ import { friendlyError } from "@zaisanfy/schemas";
 import type { UserRole } from "@zaisanfy/schemas";
 import { supabase } from "../lib/supabase";
 
-// RF-ADM-01: el admin gestiona, suspende y "ve como" (solo lectura) a cualquier usuario (migración 0021).
+// RF-ADM-01: el admin gestiona, suspende, "ve como" (solo lectura) y "entra como" (impersonate) a cualquier usuario (migraciones 0021 y 0022).
 type User = {
   id: string;
   email: string;
@@ -41,6 +41,7 @@ export default function Usuarios() {
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [viewing, setViewing] = useState<{ user: User; detail: Detail } | null>(null);
+  const [access, setAccess] = useState<{ user: User; url: string } | null>(null);
 
   const load = useCallback(async (q: string) => {
     const { data, error } = await supabase.rpc("admin_users", { p_search: q || null });
@@ -86,13 +87,50 @@ export default function Usuarios() {
     setViewing({ user: u, detail: data as Detail });
   }
 
+  // Impersonate: la base revisa el permiso y deja bitácora; la Edge Function genera un acceso de un solo uso
+  async function enterAs(u: User) {
+    const reason = window.prompt(`¿Para qué vas a entrar como ${u.email}? (queda en la bitácora)`, "Soporte");
+    if (reason === null) return;
+    setError(null);
+    setNotice(null);
+    setBusy(u.id);
+    const { data, error } = await supabase.functions.invoke("admin-impersonate", { body: { userId: u.id, reason } });
+    setBusy(null);
+    if (error || !data?.url) {
+      const msg = error && "context" in error ? await (error.context as Response).json().then((b) => b.error).catch(() => null) : null;
+      return setError(msg ?? "No se pudo generar el acceso. Revisa que la función admin-impersonate esté publicada.");
+    }
+    setAccess({ user: u, url: data.url as string });
+  }
+
   return (
     <section>
       <h1>Usuarios</h1>
-      <p className="muted">Busca, cambia el rol, suspende o revisa la cuenta de cualquier usuario.</p>
+      <p className="muted">Busca, cambia el rol, suspende, revisa o entra a la cuenta de cualquier usuario.</p>
       <input type="search" placeholder="Buscar por correo o nombre" value={search} onChange={(e) => setSearch(e.target.value)} aria-label="Buscar usuario" />
       {notice && <p className="flash" role="status">{notice}</p>}
       {error && <p className="error">{error}</p>}
+
+      {access && (
+        <div className="card">
+          <div className="row between">
+            <h2>Entrar como: {access.user.full_name ?? access.user.email}</h2>
+            <button type="button" className="small" onClick={() => setAccess(null)}>Cerrar</button>
+          </div>
+          <p className="muted small">
+            Acceso de un solo uso. Todo lo que hagas ahí lo haces como este usuario y queda registrado que fuiste tú. Ábrelo en una ventana de
+            incógnito para no cerrar tu propia sesión de la Consola.
+          </p>
+          <div className="row">
+            <a className="button primary" href={access.url} target="_blank" rel="noreferrer" onClick={() => setAccess(null)}>
+              Abrir su cuenta ↗
+            </a>
+            <button type="button" onClick={() => navigator.clipboard.writeText(access.url).then(() => setNotice("Enlace copiado. Pégalo en una ventana de incógnito."))}>
+              Copiar enlace (incógnito)
+            </button>
+          </div>
+        </div>
+      )}
 
       {viewing && (
         <div className="card">
@@ -166,6 +204,9 @@ export default function Usuarios() {
                 <td className="small">{u.last_sign_in_at ? dateFmt.format(new Date(u.last_sign_in_at)) : "Nunca"}</td>
                 <td className="actions">
                   <button type="button" className="small" onClick={() => viewAs(u)}>Ver como</button>
+                  {u.role !== "admin" && (
+                    <button type="button" className="small" disabled={busy !== null} onClick={() => enterAs(u)}>Entrar como</button>
+                  )}
                   {u.role !== "admin" && (
                     <button type="button" className={`small ${u.suspended ? "" : "danger"}`} disabled={busy !== null} onClick={() => toggleSuspend(u)}>
                       {u.suspended ? "Reactivar" : "Suspender"}
