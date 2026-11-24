@@ -14,8 +14,8 @@ export default function MisPropiedades() {
   const { session, profile } = useAuth();
   const userId = session!.user.id;
   const [rows, setRows] = useState<Property[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const location = useLocation();
+  const [error, setError] = useState<string | null>((location.state as { error?: string } | null)?.error ?? null);
   const [quota, setQuota] = useState<Quota | null>(null);
   const [notice, setNotice] = useState<string | null>((location.state as { notice?: string } | null)?.notice ?? null);
 
@@ -39,8 +39,10 @@ export default function MisPropiedades() {
   async function changeStatus(id: string, status: PropertyStatus) {
     setError(null);
     const { error } = await supabase.from("properties").update({ status }).eq("id", id);
-    if (error) setError(friendlyError(error));
-    else setNotice(status === "published" ? "Publicada. Ya aparece en el Escaparate." : `Ahora está como “${STATUS_LABEL[status]}”.`);
+    if (error) {
+      setNotice(null);
+      setError(friendlyError(error));
+    } else setNotice(status === "published" ? "Publicada. Ya aparece en el Escaparate." : `Ahora está como “${STATUS_LABEL[status]}”.`);
     load();
   }
 

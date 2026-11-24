@@ -96,11 +96,10 @@ export default function PropertyForm() {
       const { error: pubError } = await supabase.from("properties").update({ status: "published" }).eq("id", (savedId as string) ?? id);
       setSaving(false);
       navigate("/propiedades", {
-        state: {
-          notice: pubError
-            ? `Se guardó, pero no se publicó: ${friendlyError(pubError)}`
-            : "¡Publicada! Ya aparece en el Escaparate.",
-        },
+        // Si la base no dejó publicar (por ejemplo, el límite del plan), se avisa en rojo, no como éxito
+        state: pubError
+          ? { error: `Se guardó como borrador, pero no se publicó: ${friendlyError(pubError)}` }
+          : { notice: "¡Publicada! Ya aparece en el Escaparate." },
       });
       return;
     }
