@@ -210,7 +210,7 @@ export default function IsochroneSearch({ isochrone, properties, otherParams }: 
       {isochrone && (
         <p className="muted small" aria-live="polite">
           Zona a {isochrone.minutes} min en auto{" "}
-          {isochrone.source === "mapbox" ? "según las calles (Mapbox)." : "aproximada en línea recta (falta configurar Mapbox)."}{" "}
+          {isochrone.source === "estimado" ? "aproximada en línea recta (faltan configurar los mapas)." : "según las calles."}{" "}
           {properties.length === 0 ? "No hay propiedades con ubicación dentro." : `${properties.length} en el mapa.`}
         </p>
       )}

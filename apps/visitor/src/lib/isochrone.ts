@@ -1,5 +1,5 @@
 // ZAI-38 · GEO-01: zona a la que se llega en X minutos desde un punto (solo servidor).
-// La llave de Mapbox se queda aquí: nunca lleva NEXT_PUBLIC_ y nunca llega al navegador.
+// Las llaves (Mapbox u OpenRouteService) se quedan aquí: nunca lleva NEXT_PUBLIC_ y nunca llega al navegador.
 
 export const MINUTES = [10, 20, 30] as const;
 export type Minutes = (typeof MINUTES)[number];
@@ -14,7 +14,7 @@ export type Isochrone = {
   center: LatLng;
   minutes: Minutes;
   zone: Zone;
-  source: "mapbox" | "estimado";
+  source: "mapbox" | "ors" | "estimado";
 };
 
 // --- Con llave: Mapbox Isochrone API ---
@@ -38,6 +38,24 @@ async function mapboxZone(token: string, c: LatLng, minutes: Minutes): Promise<Z
   return geometry;
 }
 
+// --- Gratis y sin tarjeta: OpenRouteService Isochrones ---
+// https://openrouteservice.org/dev/#/api-docs/v2/isochrones
+async function orsZone(key: string, c: LatLng, minutes: Minutes): Promise<Zone> {
+  const res = await fetch("https://api.openrouteservice.org/v2/isochrones/driving-car", {
+    method: "POST",
+    headers: { Authorization: key, "Content-Type": "application/json", Accept: "application/geo+json" },
+    body: JSON.stringify({ locations: [[c.lng, c.lat]], range: [minutes * 60], range_type: "time", smoothing: 25 }),
+    next: { revalidate: 86400 },
+  });
+  if (!res.ok) throw new Error(`OpenRouteService respondió ${res.status}`);
+  const json = (await res.json()) as { features?: { geometry?: Zone }[] };
+  const geometry = json.features?.[0]?.geometry;
+  if (!geometry || (geometry.type !== "Polygon" && geometry.type !== "MultiPolygon")) {
+    throw new Error("OpenRouteService no regresó una zona");
+  }
+  return geometry;
+}
+
 // --- Sin llave: círculo aproximado (mismos supuestos que la ruta de Mi Lista) ---
 const ROAD_FACTOR = 1.35; // las calles no van en línea recta
 const CITY_KMH = 30; // velocidad promedio en ciudad
@@ -57,13 +75,24 @@ export function estimatedZone(c: LatLng, minutes: Minutes, sides = 48): Zone {
 
 const round6 = (n: number) => Math.round(n * 1e6) / 1e6;
 
-export async function getIsochrone(center: LatLng, minutes: Minutes, token = process.env.MAPBOX_ACCESS_TOKEN): Promise<Isochrone> {
-  if (token) {
+export async function getIsochrone(
+  center: LatLng,
+  minutes: Minutes,
+  keys: { mapbox?: string; ors?: string } = { mapbox: process.env.MAPBOX_ACCESS_TOKEN, ors: process.env.ORS_API_KEY },
+): Promise<Isochrone> {
+  // Mapbox si hay llave; si no, OpenRouteService (gratis); si fallan, círculo aproximado (y se avisa en pantalla)
+  if (keys.mapbox) {
     try {
-      return { center, minutes, zone: await mapboxZone(token, center, minutes), source: "mapbox" };
+      return { center, minutes, zone: await mapboxZone(keys.mapbox, center, minutes), source: "mapbox" };
     } catch (e) {
-      // Si Mapbox falla, la búsqueda sigue con la zona aproximada (y se avisa en pantalla)
-      console.error("isocrona", e);
+      console.error("isocrona mapbox", e);
+    }
+  }
+  if (keys.ors) {
+    try {
+      return { center, minutes, zone: await orsZone(keys.ors, center, minutes), source: "ors" };
+    } catch (e) {
+      console.error("isocrona ors", e);
     }
   }
   return { center, minutes, zone: estimatedZone(center, minutes), source: "estimado" };
