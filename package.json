@@ -11,7 +11,8 @@
     "dev:partner": "npm run dev -w apps/partner",
     "dev:admin": "npm run dev -w apps/admin",
     "build": "npm run build --workspaces --if-present",
-    "lint": "npm run lint --workspaces --if-present"
+    "lint": "npm run lint --workspaces --if-present",
+    "test": "npm test -w packages/schemas"
   },
   "overrides": {
     "postcss": "^8.5.23"

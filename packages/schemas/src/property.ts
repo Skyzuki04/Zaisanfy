@@ -16,8 +16,8 @@ export const LocationSchema = z.object({
   city: z.string().min(2, "La ciudad es obligatoria"),
   neighborhood: z.string().min(2).optional(),
   address: z.string().optional(),
-  lat: z.number().min(-90).max(90).optional(),
-  lng: z.number().min(-180).max(180).optional(),
+  lat: z.number().min(-90, "La latitud va de -90 a 90").max(90, "La latitud va de -90 a 90").optional(),
+  lng: z.number().min(-180, "La longitud va de -180 a 180").max(180, "La longitud va de -180 a 180").optional(),
 });
 
 export const MediaSchema = z.object({
@@ -27,15 +27,15 @@ export const MediaSchema = z.object({
 });
 
 export const PropertyDataSchema = z.object({
-  title: z.string().min(3, "El título debe tener al menos 3 letras").max(120),
-  description: z.string().max(2000).optional(),
+  title: z.string().min(3, "El título debe tener al menos 3 letras").max(120, "El título es de máximo 120 caracteres"),
+  description: z.string().max(2000, "La descripción es de máximo 2000 caracteres").optional(),
   operation: Operation,
   propertyType: PropertyType,
   price: z.number().positive("El precio debe ser mayor a 0"),
   currency: Currency.default("MXN"),
-  bedrooms: z.number().int().min(0, "Las recámaras no pueden ser negativas").default(0),
-  bathrooms: z.number().min(0).default(0),
-  areaM2: z.number().positive().optional(),
+  bedrooms: z.number().int("Las recámaras deben ser un número entero").min(0, "Las recámaras no pueden ser negativas").default(0),
+  bathrooms: z.number().min(0, "Los baños no pueden ser negativos").default(0),
+  areaM2: z.number().positive("Los metros cuadrados deben ser mayores a 0").optional(),
   location: LocationSchema,
   media: MediaSchema.default({}),
 });
