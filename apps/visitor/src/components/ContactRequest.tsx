@@ -7,6 +7,7 @@ import { ContactRequestInputSchema, type ContactKind, friendlyError } from "@zai
 import { browserSupabase } from "@/lib/supabase-browser";
 import { signOut, useMiLista } from "@/lib/bookmarks";
 import { useAccount } from "@/lib/role";
+import ConsoleLink from "@/components/ConsoleLink";
 
 type Props = {
   kind: ContactKind;
@@ -29,7 +30,19 @@ export default function ContactRequest({ kind, ownerId, propertyId, creativeId, 
   const [sent, setSent] = useState(false);
   const text = label ?? (kind === "visita" ? "Contactar al vendedor" : "Solicitar cotización");
 
-  if (ready && session?.user.id === ownerId) return null;
+  // El dueño no se manda solicitudes a sí mismo. Antes el botón solo desaparecía y parecía un error.
+  if (ready && session?.user.id === ownerId) {
+    return (
+      <div className="contact-cta">
+        <p className="muted">
+          {propertyId ? "Esta propiedad es tuya" : "Este es tu perfil"}: así la ven los visitantes. Tú no puedes mandarte solicitudes.
+        </p>
+        <ConsoleLink path={propertyId ? `/propiedades/${propertyId}` : "/perfil"} className="button">
+          {propertyId ? "Editarla en mi Consola" : "Editar en mi Consola"}
+        </ConsoleLink>
+      </div>
+    );
+  }
 
   if (!ready || !session) {
     return (
