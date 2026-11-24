@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
+import Loading from "../components/Loading";
 import { Link, useLocation } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../auth/AuthProvider";
@@ -167,7 +168,7 @@ export default function MisAnuncios() {
       {notice && <p className="flash" role="status">{notice}</p>}
       {error && <p className="error">{error}</p>}
       <BuyAd />
-      {rows === null && <p>Cargando…</p>}
+      {rows === null && <Loading />}
       {rows?.length === 0 && (
         <div className="card empty-state">
           <h2>

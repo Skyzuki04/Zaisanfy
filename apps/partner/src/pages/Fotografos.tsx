@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
+import Loading from "../components/Loading";
 import { Link } from "react-router-dom";
 import { friendlyError } from "@zaisanfy/schemas";
 import { supabase } from "../lib/supabase";
@@ -153,7 +154,7 @@ function SellerView({ userId }: { userId: string }) {
       {notice && <p className="flash" role="status">{notice}</p>}
 
       <h2>Mis pedidos</h2>
-      {rows === null && <p>Cargando…</p>}
+      {rows === null && <Loading />}
       {rows?.length === 0 && <p className="muted">Todavía no has pedido fotógrafo.</p>}
       <ul className="requests">
         {rows?.map((r) => (
@@ -252,7 +253,7 @@ function PhotographerView({ userId }: { userId: string }) {
     load();
   }
 
-  if (!zone) return <p>Cargando…</p>;
+  if (!zone) return <Loading />;
   if (zone.specialty !== "fotografia")
     return (
       <div className="card empty-state">

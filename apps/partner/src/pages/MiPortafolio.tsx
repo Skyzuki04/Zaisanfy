@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import Loading from "../components/Loading";
 import { Link, useLocation } from "react-router-dom";
 import { CATEGORY_LABEL, POST_IMAGES_SELECT, toPost, type CreativePost, type CreativePostRow, friendlyError } from "@zaisanfy/schemas";
 import { supabase } from "../lib/supabase";
@@ -38,7 +39,7 @@ export default function MiPortafolio() {
     load();
   }
 
-  if (hasProfile === null) return <p>Cargando…</p>;
+  if (hasProfile === null) return <Loading />;
   if (!hasProfile) {
     return (
       <div className="card">

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import Loading from "../components/Loading";
 import { Link, useLocation } from "react-router-dom";
 import { CONTACT_KIND_LABEL, CONTACT_STATUS_LABEL, ContactStatus, type InboxRow, friendlyError } from "@zaisanfy/schemas";
 import { supabase } from "../lib/supabase";
@@ -116,7 +117,7 @@ export default function Solicitudes() {
           {credits === 0 && <> · <Link to="/plan">consigue créditos con un plan</Link></>}.
         </p>
       )}
-      {rows === null && <p>Cargando…</p>}
+      {rows === null && <Loading />}
       {rows && visible.length === 0 && (
         <div className="card empty-state">
           <h2>

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import Loading from "../components/Loading";
 import { useLocation } from "react-router-dom";
 import { friendlyError } from "@zaisanfy/schemas";
 import { supabase } from "../lib/supabase";
@@ -88,7 +89,7 @@ export default function MiPlan() {
         </div>
       )}
 
-      {plans === null && <p>Cargando…</p>}
+      {plans === null && <Loading />}
       <div className="plans">
         {plans?.map((p) => {
           const current = sub?.plan_id === p.id;
