@@ -35,4 +35,16 @@ Si alguien se brinca el formulario, la base la rechaza igual. El error de la bas
 5. **Unique:** registrarse con un correo que ya existe → "Ese correo ya tiene una cuenta. Inicia sesión."
 6. **Límite WIP:** vendedor Freemium con 3 publicadas intenta publicar la 4.ª → aviso rojo.
 
-Las pruebas automáticas de todas estas reglas están en `supabase/tests/0000_todas_las_pruebas.sql`.
+## Mensajes amigables en todas partes
+
+- **Formularios (Zod):** las reglas con mensaje propio lo muestran tal cual. Las demás usan el mapa en español de
+  `packages/schemas/src/zod-es.ts` (por ejemplo "Máximo 120 caracteres", "Escribe un número"), así nunca sale "String must contain…".
+- **Base de datos:** `friendlyError()` traduce 23505 (Unique), 23514 (Range), 42501 (permiso) y nuestros códigos ZA001–ZA007.
+- **Entrar y registrarse:** `authError()` traduce lo que contesta Supabase Auth: correo sin confirmar, contraseña débil,
+  demasiados intentos, correo ya registrado, captcha y cuenta suspendida. Se usa en las 3 apps.
+- **Subir fotos:** `uploadError()` traduce lo que contesta Cloudinary (archivo muy pesado, formato no permitido, sin conexión).
+
+## Pruebas automáticas
+
+- Base de datos: `supabase/tests/0000_todas_las_pruebas.sql` (debe terminar en TODAS LAS PRUEBAS OK).
+- Formularios y mensajes: `npm test` en la raíz (10 pruebas de Required, Range, Regex, Unique, límite WIP y mensajes en español).

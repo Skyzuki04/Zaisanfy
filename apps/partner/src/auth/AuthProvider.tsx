@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import type { Session } from "@supabase/supabase-js";
-import type { SignIn, SignUp, UserRole } from "@zaisanfy/schemas";
+import { authError, type SignIn, type SignUp, type UserRole } from "@zaisanfy/schemas";
 import { supabase } from "../lib/supabase";
 
 type Profile = { id: string; role: UserRole; full_name: string | null };
@@ -63,8 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loading,
     async signIn({ email, password }, captchaToken) {
       const { error } = await supabase.auth.signInWithPassword({ email, password, options: { captchaToken } });
-      if (error && /captcha/i.test(error.message)) return "La verificación de robot falló. Intenta de nuevo.";
-      return error ? "Correo o contraseña incorrectos" : null;
+      return error ? authError(error, "Correo o contraseña incorrectos.") : null;
     },
     async signUp({ email, password, full_name, role }, captchaToken) {
       const { data, error } = await supabase.auth.signUp({
@@ -76,7 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (error?.message === "User already registered" || data.user?.identities?.length === 0) {
         return { error: "Ese correo ya tiene una cuenta. Inicia sesión.", needsConfirmation: false };
       }
-      if (error) return { error: error.message, needsConfirmation: false };
+      if (error) return { error: authError(error, "No pudimos crear tu cuenta. Intenta de nuevo."), needsConfirmation: false };
       return { error: null, needsConfirmation: !data.session };
     },
     async signOut() {

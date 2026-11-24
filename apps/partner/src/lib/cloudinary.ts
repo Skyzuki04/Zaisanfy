@@ -1,3 +1,5 @@
+import { uploadError } from "@zaisanfy/schemas";
+
 const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
 const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
@@ -11,9 +13,15 @@ export async function uploadImage(file: File): Promise<string> {
   const body = new FormData();
   body.append("file", file);
   body.append("upload_preset", uploadPreset);
-  const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, { method: "POST", body });
-  const json = await res.json();
-  if (!res.ok) throw new Error(json?.error?.message ?? "No se pudo subir la imagen");
+  let res: Response;
+  try {
+    res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, { method: "POST", body });
+  } catch (e) {
+    throw new Error(uploadError((e as Error).message));
+  }
+  const json = await res.json().catch(() => null);
+  // Cloudinary contesta en inglés ("File size too large", "Invalid image file"): se traduce antes de mostrarlo
+  if (!res.ok) throw new Error(uploadError(json?.error?.message));
   return json.secure_url as string;
 }
 

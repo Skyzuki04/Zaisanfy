@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { BrowserRouter, NavLink, Navigate, Route, Routes } from "react-router-dom";
 import type { Session } from "@supabase/supabase-js";
-import { SignInSchema } from "@zaisanfy/schemas";
+import { SignInSchema, authError } from "@zaisanfy/schemas";
 import { supabase } from "./lib/supabase";
 import Logo from "./components/Logo";
 import Turnstile from "./components/Turnstile";
@@ -81,7 +81,7 @@ function Login() {
     const { error } = await supabase.auth.signInWithPassword({ ...parsed.data, options: { captchaToken: captcha ?? undefined } });
     setBusy(false);
     if (error) {
-      setError(/captcha/i.test(error.message) ? "La verificación de robot falló. Intenta de nuevo." : "Correo o contraseña incorrectos");
+      setError(authError(error, "Correo o contraseña incorrectos."));
       setCaptchaReset((n) => n + 1);
     }
   }

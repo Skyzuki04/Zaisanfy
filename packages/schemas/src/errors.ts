@@ -77,3 +77,49 @@ export const isDuplicate = (error: DbError) => error?.code === "23505";
 
 /** true si el error es el límite del plan (ZA001). */
 export const isPlanLimit = (error: DbError) => error?.code === "ZA001";
+
+export type AuthErrorLike = { code?: string | null; message?: string | null; status?: number | null } | null | undefined;
+
+/**
+ * Errores de inicio de sesión y registro (Supabase Auth) en palabras normales.
+ * Supabase los manda en inglés ("Email not confirmed", "Password should be at least 6 characters"…);
+ * aquí se revisa primero el código y luego el texto, porque las versiones viejas no mandan código.
+ */
+export function authError(error: AuthErrorLike, fallback = "No pudimos completar la operación. Intenta de nuevo."): string {
+  if (!error) return fallback;
+  const code = error.code ?? "";
+  const m = error.message ?? "";
+  if (code === "invalid_credentials" || /invalid login credentials/i.test(m)) return "Correo o contraseña incorrectos.";
+  if (code === "email_not_confirmed" || /email not confirmed/i.test(m)) {
+    return "Todavía no confirmas tu correo. Abre el correo que te mandamos (revisa también spam) y vuelve a entrar.";
+  }
+  if (code === "user_already_exists" || code === "email_exists" || /already registered/i.test(m)) return "Ese correo ya tiene una cuenta. Inicia sesión.";
+  if (code === "captcha_failed" || /captcha/i.test(m)) return "La verificación de robot falló. Intenta de nuevo.";
+  if (code === "user_banned" || /banned/i.test(m)) return "Tu cuenta está suspendida. Escríbenos si crees que es un error.";
+  if (code === "weak_password" || /weak|pwned|known to be/i.test(m)) {
+    const min = /at least (\d+)/i.exec(m)?.[1];
+    return min
+      ? `La contraseña debe tener al menos ${min} caracteres.`
+      : "Esa contraseña es muy fácil de adivinar. Usa una más larga, con letras y números.";
+  }
+  if (/password should be at least (\d+)/i.test(m)) return `La contraseña debe tener al menos ${/at least (\d+)/i.exec(m)?.[1]} caracteres.`;
+  if (code === "email_address_invalid" || code === "validation_failed" || /unable to validate email|invalid format|invalid email/i.test(m)) {
+    return "Escribe un correo válido.";
+  }
+  if (code.startsWith("over_") || error.status === 429 || /rate limit|too many/i.test(m)) {
+    return "Hiciste demasiados intentos seguidos. Espera unos minutos e intenta de nuevo.";
+  }
+  if (code === "signup_disabled" || /signups not allowed/i.test(m)) return "Por ahora no se pueden crear cuentas nuevas.";
+  if (/Failed to fetch|NetworkError|fetch failed/i.test(m)) return "No hay conexión. Revisa tu internet e intenta de nuevo.";
+  return fallback;
+}
+
+/** Errores al subir imágenes (Cloudinary) en palabras normales. */
+export function uploadError(message: string | null | undefined): string {
+  const m = message ?? "";
+  if (/file size too large|too large/i.test(m)) return "La imagen pesa demasiado. Usa una de máximo 10 MB.";
+  if (/format|invalid image|unsupported/i.test(m)) return "Ese formato no se permite. Usa una foto JPG, PNG, WEBP o HEIC.";
+  if (/Failed to fetch|NetworkError|fetch failed|network/i.test(m)) return "No hay conexión. Revisa tu internet e intenta de nuevo.";
+  if (/rate limit|too many/i.test(m)) return "Subiste muchas fotos seguidas. Espera un minuto e intenta de nuevo.";
+  return "No se pudo subir la imagen. Intenta de nuevo.";
+}

@@ -3,14 +3,13 @@
 import { Suspense, useEffect, useState, type FormEvent, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { SignInSchema, SignUpSchema, type SignUpRole } from "@zaisanfy/schemas";
+import { SignInSchema, SignUpSchema, authError, type SignUpRole } from "@zaisanfy/schemas";
 import { browserSupabase } from "@/lib/supabase-browser";
 import { useAccount } from "@/lib/role";
 import { goToConsole } from "@/components/ConsoleLink";
 import Turnstile from "@/components/Turnstile";
 
 const captchaKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
-const authMessage = (m: string) => (/captcha/i.test(m) ? "La verificación de robot falló. Intenta de nuevo." : m);
 
 export default function EntrarPage() {
   return (
@@ -91,7 +90,7 @@ function Entrar() {
         const parsed = SignInSchema.safeParse(form);
         if (!parsed.success) return setError(parsed.error.issues[0].message);
         const { error } = await sb.auth.signInWithPassword({ ...parsed.data, options: { captchaToken } });
-        if (error) setError(error.message === "Invalid login credentials" ? "Correo o contraseña incorrectos" : authMessage(error.message));
+        if (error) setError(authError(error, "Correo o contraseña incorrectos."));
       } else {
         const parsed = SignUpSchema.safeParse({ ...form, role: accountType });
         if (!parsed.success) return setError(parsed.error.issues[0].message);
@@ -100,7 +99,7 @@ function Entrar() {
         const { data, error } = await sb.auth.signUp({ email, password, options: { data: { role, full_name }, emailRedirectTo: back, captchaToken } });
         // Con confirmación de correo, Supabase responde sin error y con identities vacío si el correo ya existe
         if (error?.message === "User already registered" || data.user?.identities?.length === 0) setError("Ese correo ya tiene una cuenta. Inicia sesión.");
-        else if (error) setError(authMessage(error.message));
+        else if (error) setError(authError(error, "No pudimos crear tu cuenta. Intenta de nuevo."));
         else if (!data.session) {
           setNotice("Te mandamos un correo para confirmar tu cuenta. Ábrelo, confirma y después inicia sesión aquí.");
           setMode("entrar");
