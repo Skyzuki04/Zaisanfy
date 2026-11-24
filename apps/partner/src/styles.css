@@ -214,3 +214,7 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--g
 
 /* Captcha (ZAI-33) */
 .captcha { min-height: 65px; margin: 4px 0; }
+
+/* RF-ADM-01: aviso de que un admin está dentro de la cuenta */
+.impersonating { background: #7a1f1f; color: #fff; padding: 10px 24px; font-size: 0.9rem; }
+.impersonating .link { color: #fff; text-decoration: underline; }

@@ -8,3 +8,25 @@ if (!url || !anonKey) {
 }
 
 export const supabase = createClient(url, anonKey);
+
+// RF-ADM-01: si un admin entró como este usuario (impersonate), la Consola lo avisa mientras dure la pestaña
+const KEY = "zaisanfy-como-admin";
+try {
+  if (new URLSearchParams(window.location.search).has("como_admin")) sessionStorage.setItem(KEY, "1");
+} catch {
+  /* sin sessionStorage no hay aviso */
+}
+export const isImpersonating = () => {
+  try {
+    return sessionStorage.getItem(KEY) === "1";
+  } catch {
+    return false;
+  }
+};
+export const endImpersonation = () => {
+  try {
+    sessionStorage.removeItem(KEY);
+  } catch {
+    /* nada */
+  }
+};
