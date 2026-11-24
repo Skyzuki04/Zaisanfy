@@ -1,8 +1,10 @@
+import { useEffect, useState } from "react";
 import { Link, NavLink, Navigate, Outlet } from "react-router-dom";
 import type { Session } from "@supabase/supabase-js";
 import type { UserRole } from "@zaisanfy/schemas";
 import { useAuth } from "../auth/AuthProvider";
 import Logo from "./Logo";
+import { supabase } from "../lib/supabase";
 
 const visitorUrl = import.meta.env.VITE_VISITOR_URL ?? "http://localhost:3000";
 
@@ -18,6 +20,13 @@ const ROLE_LABEL: Record<UserRole, string> = { vendedor: "Vendedor", creativo: "
 
 export default function Layout() {
   const { session, profile, loading, signOut } = useAuth();
+  const [suspended, setSuspended] = useState(false);
+
+  // RF-ADM-01: si el admin suspendió la cuenta, se avisa (la base ya bloquea cualquier cambio)
+  useEffect(() => {
+    if (!profile) return;
+    supabase.rpc("am_suspended").then(({ data }) => setSuspended(data === true));
+  }, [profile]);
 
   if (loading) return <p className="center">Cargando…</p>;
   if (!session) return <Navigate to="/entrar" replace />;
@@ -34,7 +43,6 @@ export default function Layout() {
           {role === "creativo" && <NavLink to="/perfil">Mi perfil</NavLink>}
           {role === "creativo" && <NavLink to="/portafolio">Mi portafolio</NavLink>}
           {role !== "visitante" && <NavLink to="/solicitudes">Solicitudes</NavLink>}
-          {role === "admin" && <NavLink to="/reportes">Reportes</NavLink>}
           {role === "vendedor" && <NavLink to="/fotografos">Fotógrafo 360</NavLink>}
           {role === "creativo" && <NavLink to="/fotografos">Trabajos 360</NavLink>}
           {(role === "vendedor" || role === "creativo") && <NavLink to="/plan">Mi plan</NavLink>}
@@ -53,7 +61,16 @@ export default function Layout() {
         </span>
       </header>
       <main className="content">
-        <Outlet />
+        {suspended ? (
+          <div className="card empty-state">
+            <h2>
+              Tu cuenta está <em>suspendida</em>
+            </h2>
+            <p className="muted">El equipo de Zaisanfy suspendió tu cuenta y tu contenido no se muestra. Escríbenos si crees que es un error.</p>
+          </div>
+        ) : (
+          <Outlet />
+        )}
       </main>
     </div>
   );
