@@ -90,6 +90,9 @@ Las migraciones se corren **una sola vez**; las pruebas, cuantas veces quieras.
 Para revisar qué hay en la base sin cambiar nada: [`supabase/inventario.sql`](supabase/inventario.sql) (marca cada objeto como OK, FALTA o SOBRA).
 En Supabase → SQL Editor → Shared están guardadas **Todas_las_pruebas_SQL** e **Inventario**; las migraciones no se guardan ahí porque ya están aplicadas.
 
+Datos de prueba para la demo: [`supabase/seed/0003_datos_de_prueba.sql`](supabase/seed/0003_datos_de_prueba.sql) carga 6 cuentas demo (`demo.*@zaisanfy.test`, sin contraseña), 8 propiedades con fotos y 360, portafolio, Mi Lista, solicitudes y un pedido de fotógrafo. Se puede correr varias veces sin duplicar.
+Para quitarlos: [`supabase/seed/0004_borrar_datos_de_prueba.sql`](supabase/seed/0004_borrar_datos_de_prueba.sql) (borra solo esas cuentas y lo suyo).
+
 Desde la 0008 la integración de Supabase con GitHub aplica sola cada migración nueva al unirla a `main` (chequeo "Supabase Preview"). Ya no se pegan a mano.
 
 Una migración nueva se agrega con el siguiente número (`0010_…`), nunca editando una que ya se corrió.
