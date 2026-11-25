@@ -1738,6 +1738,13 @@ insert into public.creative_profiles (id, display_name) values ('00000000-0000-0
 insert into public.creative_posts (id, creative_id, title, category) values
   ('00000000-0000-0000-0000-0000000021b1', '00000000-0000-0000-0000-00000000d213', 'Render 21', 'render');
 
+-- Métricas antes de los pagos de prueba: en producción ya hay suscripciones reales,
+-- así que se compara la diferencia y no el total.
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub": "00000000-0000-0000-0000-00000000d211", "role": "authenticated"}', true);
+create temp table metricas_antes on commit drop as select * from public.admin_metrics(3) limit 1;
+reset role;
+
 -- Pagos para las métricas: una Pro viva y un cambio de plan (no es churn)
 insert into public.subscriptions (user_id, plan_id, status, created_at, updated_at) values
   ('00000000-0000-0000-0000-00000000d212', 'pro', 'activa', now() - interval '40 days', now()),
@@ -1781,8 +1788,8 @@ begin
   end if;
 
   select * into m from public.admin_metrics(3) limit 1;
-  if m.mrr < 499 + 1499 then raise exception 'FALLA: el MRR no suma las suscripciones vivas (%)', m.mrr; end if;
-  if m.churned <> 0 then raise exception 'FALLA: un cambio de plan contó como churn'; end if;
+  if m.mrr - (select mrr from metricas_antes) < 499 + 1499 then raise exception 'FALLA: el MRR no suma las suscripciones vivas (%)', m.mrr; end if;
+  if m.churned <> (select churned from metricas_antes) then raise exception 'FALLA: un cambio de plan contó como churn'; end if;
 
   begin perform public.admin_set_suspended('00000000-0000-0000-0000-00000000d211', true); raise exception 'FALLA: el admin se suspendió solo';
   exception when others then if sqlerrm like 'FALLA%' then raise; end if; end;
