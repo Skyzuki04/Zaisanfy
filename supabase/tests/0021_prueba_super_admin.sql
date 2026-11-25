@@ -20,7 +20,8 @@ insert into public.creative_posts (id, creative_id, title, category) values
 -- así que se compara la diferencia y no el total.
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub": "00000000-0000-0000-0000-00000000d211", "role": "authenticated"}', true);
-create temp table metricas_antes on commit drop as select * from public.admin_metrics(3) limit 1;
+select set_config('prueba.mrr_antes', mrr::text, true), set_config('prueba.churn_antes', churned::text, true)
+from public.admin_metrics(3) limit 1;
 reset role;
 
 -- Pagos para las métricas: una Pro viva y un cambio de plan (no es churn)
@@ -66,8 +67,8 @@ begin
   end if;
 
   select * into m from public.admin_metrics(3) limit 1;
-  if m.mrr - (select mrr from metricas_antes) < 499 + 1499 then raise exception 'FALLA: el MRR no suma las suscripciones vivas (%)', m.mrr; end if;
-  if m.churned <> (select churned from metricas_antes) then raise exception 'FALLA: un cambio de plan contó como churn'; end if;
+  if m.mrr - current_setting('prueba.mrr_antes')::numeric < 499 + 1499 then raise exception 'FALLA: el MRR no suma las suscripciones vivas (%)', m.mrr; end if;
+  if m.churned <> current_setting('prueba.churn_antes')::bigint then raise exception 'FALLA: un cambio de plan contó como churn'; end if;
 
   begin perform public.admin_set_suspended('00000000-0000-0000-0000-00000000d211', true); raise exception 'FALLA: el admin se suspendió solo';
   exception when others then if sqlerrm like 'FALLA%' then raise; end if; end;
