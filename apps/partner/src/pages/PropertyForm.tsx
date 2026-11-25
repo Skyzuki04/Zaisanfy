@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
+import Loading from "../components/Loading";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { PROPERTY_SELECT, PropertyDataSchema, toProperty, toSavePropertyArgs, type Property, type PropertyData, type PropertyRow, friendlyError } from "@zaisanfy/schemas";
 import { supabase } from "../lib/supabase";
@@ -110,7 +111,7 @@ export default function PropertyForm() {
   }
 
   if (!initial) {
-    if (!saveError) return <p>Cargando…</p>;
+    if (!saveError) return <Loading />;
     return (
       <div className="card empty-state">
         <h2>{saveError}</h2>

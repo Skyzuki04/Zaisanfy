@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import Loading from "../components/Loading";
 import { Link, useLocation } from "react-router-dom";
 import { PROPERTY_SELECT, toProperty, type Property, type PropertyRow, type PropertyStatus, friendlyError } from "@zaisanfy/schemas";
 import { supabase } from "../lib/supabase";
@@ -94,7 +95,7 @@ export default function MisPropiedades() {
           </button>
         </p>
       )}
-      {rows === null && <p>Cargando…</p>}
+      {rows === null && <Loading />}
       {rows?.length === 0 && (
         <div className="card empty-state">
           <h2>

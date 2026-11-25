@@ -1,4 +1,5 @@
 import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
+import Loading from "../components/Loading";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   CATEGORY_LABEL,
@@ -114,7 +115,7 @@ export default function PostForm() {
     navigate("/portafolio", { state: { notice: isNew ? "Publicación creada. Ya aparece en tu perfil y en el muro." : "Cambios guardados." } });
   }
 
-  if (post === undefined) return <p>Cargando…</p>;
+  if (post === undefined) return <Loading />;
   if (!isNew && (post === null || post.creative_id !== session!.user.id)) {
     return (
       <div className="card empty-state">

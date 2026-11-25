@@ -1,4 +1,5 @@
 import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
+import Loading from "../components/Loading";
 import { CreativeProfileInputSchema, SPECIALTY_LABEL, type CreativeProfile, friendlyError } from "@zaisanfy/schemas";
 import { Link } from "react-router-dom";
 import { supabase } from "../lib/supabase";
@@ -78,7 +79,7 @@ export default function MiPerfil() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  if (current === undefined) return <p>Cargando…</p>;
+  if (current === undefined) return <Loading />;
   const err = (k: string) => errors[k] && <small className="error">{errors[k]}</small>;
 
   return (

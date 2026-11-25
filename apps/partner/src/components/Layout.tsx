@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { Link, NavLink, Navigate, Outlet } from "react-router-dom";
+import { Link, NavLink, Navigate, Outlet, useLocation } from "react-router-dom";
 import type { Session } from "@supabase/supabase-js";
 import type { UserRole } from "@zaisanfy/schemas";
 import { useAuth } from "../auth/AuthProvider";
 import Logo from "./Logo";
+import Loading from "./Loading";
 import { endImpersonation, isImpersonating, supabase } from "../lib/supabase";
 
 const visitorUrl = import.meta.env.VITE_VISITOR_URL ?? "http://localhost:3000";
@@ -21,6 +22,11 @@ const ROLE_LABEL: Record<UserRole, string> = { vendedor: "Vendedor", creativo: "
 export default function Layout() {
   const { session, profile, loading, signOut } = useAuth();
   const [suspended, setSuspended] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const { pathname } = useLocation();
+
+  // En celular el menú se cierra al cambiar de pantalla
+  useEffect(() => setMenuOpen(false), [pathname]);
 
   // RF-ADM-01: si el admin suspendió la cuenta, se avisa (la base ya bloquea cualquier cambio)
   useEffect(() => {
@@ -28,16 +34,26 @@ export default function Layout() {
     supabase.rpc("am_suspended").then(({ data }) => setSuspended(data === true));
   }, [profile]);
 
-  if (loading) return <p className="center">Cargando…</p>;
+  if (loading) return <Loading full />;
   if (!session) return <Navigate to="/entrar" replace />;
-  if (!profile) return <p className="center">Cargando tu perfil…</p>;
+  if (!profile) return <Loading full label="Cargando tu perfil…" />;
 
   const role = profile.role;
   return (
     <div className="shell">
       <header className="topbar">
         <span className="row"><Logo size={30} /><span className="console-tag">Consola</span></span>
-        <nav>
+        <button
+          type="button"
+          className="menu-btn"
+          aria-expanded={menuOpen}
+          aria-controls="menu-consola"
+          onClick={() => setMenuOpen((o) => !o)}
+        >
+          {menuOpen ? "✕ Cerrar" : "☰ Menú"}
+        </button>
+        <div id="menu-consola" className={`topbar-menu ${menuOpen ? "open" : ""}`}>
+        <nav aria-label="Secciones de la Consola">
           {(role === "vendedor" || role === "admin") && <NavLink to="/propiedades">Mis propiedades</NavLink>}
           {role === "vendedor" && <NavLink to="/anuncios">Mis anuncios</NavLink>}
           {role === "creativo" && <NavLink to="/perfil">Mi perfil</NavLink>}
@@ -59,6 +75,7 @@ export default function Layout() {
             Salir
           </button>
         </span>
+        </div>
       </header>
       {isImpersonating() && (
         <div className="impersonating" role="alert">
