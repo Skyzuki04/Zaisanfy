@@ -21,8 +21,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
+        <a href="#contenido" className="skip-link">
+          Saltar al contenido
+        </a>
         <SiteHeader />
-        {children}
+        <div id="contenido" tabIndex={-1}>
+          {children}
+        </div>
       </body>
     </html>
   );

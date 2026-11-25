@@ -48,7 +48,7 @@ export default function Login() {
   }
 
   return (
-    <div className="auth-split">
+    <main className="auth-split">
       <aside className="auth-side">
         <Logo size={40} />
         <div>
@@ -113,6 +113,6 @@ export default function Login() {
         con la misma cuenta entras a las dos apps.
       </p>
     </div>
-    </div>
+    </main>
   );
 }

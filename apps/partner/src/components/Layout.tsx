@@ -41,6 +41,9 @@ export default function Layout() {
   const role = profile.role;
   return (
     <div className="shell">
+      <a href="#contenido" className="skip-link">
+        Saltar al contenido
+      </a>
       <header className="topbar">
         <span className="row"><Logo size={30} /><span className="console-tag">Consola</span></span>
         <button
@@ -83,7 +86,7 @@ export default function Layout() {
           <button className="link" onClick={() => { endImpersonation(); signOut(); }}>Salir de su cuenta</button>
         </div>
       )}
-      <main className="content">
+      <main id="contenido" tabIndex={-1} className="content">
         {suspended ? (
           <div className="card empty-state">
             <h2>

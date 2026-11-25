@@ -55,10 +55,10 @@ button:disabled { opacity: 0.6; cursor: default; }
 .table .actions { display: flex; gap: 6px; flex-wrap: wrap; }
 @media (max-width: 760px) { .table thead { display: none; } .table tr { display: block; border-bottom: 1px solid var(--line); } .table td { display: block; border: none; padding: 4px 12px; } }
 
-.badge { font-size: 0.75rem; padding: 2px 8px; border-radius: 999px; background: #eef1f5; }
+.badge { font-size: 0.75rem; padding: 2px 8px; border-radius: 999px; background: #f4ecdc; }
 .badge.published { background: #dcf3e3; color: var(--ok); }
 .badge.draft { background: #fff4d6; color: #8a6100; }
-.badge.closed { background: #e8e8e8; color: #555; }
+.badge.closed { background: #e6e1d8; color: #1a1613; }
 .badge.hidden { background: #f6dede; color: var(--danger); }
 
 /* Fotos */
@@ -72,7 +72,7 @@ button:disabled { opacity: 0.6; cursor: default; }
 
 /* Perfil del creativo */
 .avatar { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; }
-.avatar.empty { display: grid; place-items: center; background: #eceff3; color: var(--muted); font-size: 0.75rem; }
+.avatar.empty { display: grid; place-items: center; background: #efe7d6; color: var(--muted); font-size: 0.75rem; }
 
 /* Portafolio */
 .posts { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
@@ -95,7 +95,7 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--gold); outl
 button, .button { border-radius: 999px; padding: 9px 18px; }
 button.primary, .button.primary { background: #1a1613; border-color: #1a1613; }
 button.primary:hover, .button.primary:hover { background: #000; }
-button.link { color: #8a6b3e; }
+button.link { color: #7a5a2c; }
 .tabs button { border-radius: 999px; }
 .tabs button.active { background: #1a1613; color: #fff; border-color: #1a1613; }
 .table { border-radius: 22px; border-color: transparent; }
@@ -208,7 +208,7 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--g
 
 /* Fotógrafo 360 (ZAI-39) */
 .timeline { display: flex; gap: 6px; list-style: none; padding: 0; margin: 10px 0; flex-wrap: wrap; }
-.timeline li { font-size: 0.8rem; padding: 3px 10px; border-radius: 999px; background: #eef1f5; color: #667; }
+.timeline li { font-size: 0.8rem; padding: 3px 10px; border-radius: 999px; background: #f4ecdc; color: #6b6b66; }
 .timeline li.done { background: rgba(201,168,118,0.16); color: #7a5a2c; }
 .timeline li.now { background: #c9a876; color: #1a1408; font-weight: 600; }
 
@@ -247,3 +247,11 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--g
 /* Etiquetas que se estiraban a todo el ancho */
 .request .badge, .request .lock-badge { justify-self: start; width: max-content; }
 .plan .badge { align-self: flex-start; }
+
+/* Sprint jueves: accesibilidad */
+:focus-visible { outline: 2px solid #7a5a2c; outline-offset: 2px; }
+.topbar :focus-visible, .auth-side :focus-visible, .next-steps :focus-visible { outline-color: #c9a876; }
+input:focus-visible, select:focus-visible, textarea:focus-visible { outline: none; }
+#contenido:focus { outline: none; }
+.skip-link { position: absolute; left: 16px; top: -60px; z-index: 100; background: #c9a876; color: #1a1613; padding: 10px 16px; border-radius: 999px; font-weight: 600; text-decoration: none; }
+.skip-link:focus { top: 10px; }
