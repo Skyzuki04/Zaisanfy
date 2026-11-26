@@ -136,7 +136,13 @@ export function uploadError(message: string | null | undefined): string {
   if (/upload preset|whitelisted|unsigned|cloud_name|api key|unknown api/i.test(m)) {
     return "El servicio de fotos está mal configurado (preset o nube de Cloudinary). Revisa VITE_CLOUDINARY_CLOUD_NAME y VITE_CLOUDINARY_UPLOAD_PRESET en apps/partner/.env.";
   }
-  if (/format|invalid image|unsupported/i.test(m)) return "Ese formato no se permite. Usa una foto JPG, PNG, WEBP o HEIC.";
+  if (/format|invalid image|unsupported/i.test(m)) {
+    // Cloudinary dice qué formato detectó por dentro ("Image file format avif not allowed"), aunque el archivo diga .jpg
+    const real = /format (\w+) not allowed/i.exec(m)?.[1]?.toUpperCase();
+    return real
+      ? `Ese formato no se permite: aunque el nombre diga otra cosa, por dentro el archivo es ${real}. Usa una foto JPG, PNG, WEBP o HEIC.`
+      : `Ese formato no se permite. Usa una foto JPG, PNG, WEBP o HEIC. (Detalle: ${m.slice(0, 160)})`;
+  }
   if (/Failed to fetch|NetworkError|fetch failed|network|load failed/i.test(m)) return "No hay conexión. Revisa tu internet e intenta de nuevo.";
   if (/rate limit|too many/i.test(m)) return "Subiste muchas fotos seguidas. Espera un minuto e intenta de nuevo.";
   return m ? `No se pudo subir la imagen. Intenta de nuevo. (Detalle: ${m.slice(0, 160)})` : "No se pudo subir la imagen. Intenta de nuevo.";
