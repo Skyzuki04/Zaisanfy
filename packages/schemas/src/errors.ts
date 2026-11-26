@@ -114,12 +114,30 @@ export function authError(error: AuthErrorLike, fallback = "No pudimos completar
   return fallback;
 }
 
-/** Errores al subir imágenes (Cloudinary) en palabras normales. */
+/** Formatos de foto que acepta el preset de Cloudinary. */
+export const IMAGE_EXTENSIONS = ["jpg", "jpeg", "png", "webp", "heic", "heif"] as const;
+
+/**
+ * Revisa el formato por extensión y por tipo. En Windows el navegador manda el tipo vacío
+ * para HEIC y a veces para JPG con extensión en mayúsculas, así que la extensión manda.
+ */
+export function imageFormatError(name: string, type: string): string | null {
+  const ext = /\.([a-z0-9]+)$/i.exec(name)?.[1]?.toLowerCase() ?? "";
+  if ((IMAGE_EXTENSIONS as readonly string[]).includes(ext)) return null;
+  if (!ext && /^image\/(jpe?g|png|webp|hei[cf])$/i.test(type)) return null;
+  return `"${name}" no es un formato permitido. Usa una foto JPG, PNG, WEBP o HEIC.`;
+}
+
+/** Errores al subir imágenes (Cloudinary) en palabras normales. Si no se reconoce, se agrega el motivo real. */
 export function uploadError(message: string | null | undefined): string {
   const m = message ?? "";
   if (/file size too large|too large/i.test(m)) return "La imagen pesa demasiado. Usa una de máximo 10 MB.";
+  if (/resolution too high|megapixel|mpixel/i.test(m)) return "La imagen tiene demasiada resolución. Usa una de máximo 25 megapíxeles.";
+  if (/upload preset|whitelisted|unsigned|cloud_name|api key|unknown api/i.test(m)) {
+    return "El servicio de fotos está mal configurado (preset o nube de Cloudinary). Revisa VITE_CLOUDINARY_CLOUD_NAME y VITE_CLOUDINARY_UPLOAD_PRESET en apps/partner/.env.";
+  }
   if (/format|invalid image|unsupported/i.test(m)) return "Ese formato no se permite. Usa una foto JPG, PNG, WEBP o HEIC.";
-  if (/Failed to fetch|NetworkError|fetch failed|network/i.test(m)) return "No hay conexión. Revisa tu internet e intenta de nuevo.";
+  if (/Failed to fetch|NetworkError|fetch failed|network|load failed/i.test(m)) return "No hay conexión. Revisa tu internet e intenta de nuevo.";
   if (/rate limit|too many/i.test(m)) return "Subiste muchas fotos seguidas. Espera un minuto e intenta de nuevo.";
-  return "No se pudo subir la imagen. Intenta de nuevo.";
+  return m ? `No se pudo subir la imagen. Intenta de nuevo. (Detalle: ${m.slice(0, 160)})` : "No se pudo subir la imagen. Intenta de nuevo.";
 }

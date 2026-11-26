@@ -79,10 +79,10 @@ export default function MediaEditor({ value, onChange }: { value: Media; onChang
   return (
     <div className="media span2">
       <h2>Fotos</h2>
-      <p className="muted">JPG, PNG o WebP de hasta 10 MB. La portada es la que se ve primero en el buscador.</p>
+      <p className="muted">JPG, PNG, WebP o HEIC de hasta 10 MB. La portada es la que se ve primero en el buscador.</p>
       <label className="button">
         + Agregar fotos
-        <input type="file" accept="image/*" multiple onChange={onPhotos} hidden data-testid="photos" />
+        <input type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.jpg,.jpeg,.png,.webp,.heic,.heif" multiple onChange={onPhotos} hidden data-testid="photos" />
       </label>
       <ul className="thumbs">
         {value.gallery.map((url, i) => (
@@ -121,7 +121,7 @@ export default function MediaEditor({ value, onChange }: { value: Media; onChang
       <div className="row">
         <label className="button">
           {value.panorama360Url ? "Cambiar foto 360" : "+ Subir foto 360"}
-          <input type="file" accept="image/*" onChange={on360} hidden data-testid="pano" />
+          <input type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.jpg,.jpeg,.png,.webp,.heic,.heif" onChange={on360} hidden data-testid="pano" />
         </label>
         {value.panorama360Url && (
           <button type="button" className="small danger" onClick={() => onChange({ ...value, panorama360Url: null })}>

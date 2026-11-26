@@ -4,7 +4,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   PropertyDataSchema, SignUpSchema, ContactRequestInputSchema, CreativePostInputSchema,
-  friendlyError, authError, uploadError, isPlanLimit,
+  friendlyError, authError, uploadError, imageFormatError, isPlanLimit,
 } from "../src/index";
 
 const ok = { title: "Casa en Zapopan", operation: "venta", propertyType: "casa", price: 1500000, location: { state: "Jalisco", city: "Zapopan" } };
@@ -98,4 +98,22 @@ test("Errores al subir fotos en español", () => {
   assert.match(uploadError("Invalid image file"), /formato/);
   assert.match(uploadError("Failed to fetch"), /conexión/);
   assert.equal(uploadError(undefined), "No se pudo subir la imagen. Intenta de nuevo.");
+});
+
+test("BLK-01: formatos de foto por extensión aunque el navegador no mande el tipo", () => {
+  assert.equal(imageFormatError("sala.jpg", "image/jpeg"), null);
+  assert.equal(imageFormatError("SALA.JPG", ""), null);
+  assert.equal(imageFormatError("cocina.jpeg", "image/jpeg"), null);
+  assert.equal(imageFormatError("frente.png", "image/png"), null);
+  assert.equal(imageFormatError("patio.webp", "image/webp"), null);
+  assert.equal(imageFormatError("IMG_0001.HEIC", ""), null);
+  assert.match(imageFormatError("plano.gif", "image/gif")!, /no es un formato permitido/);
+  assert.match(imageFormatError("contrato.pdf", "application/pdf")!, /JPG, PNG, WEBP o HEIC/);
+});
+
+test("BLK-01: errores de Cloudinary que antes salían genéricos", () => {
+  assert.match(uploadError("Upload preset must be whitelisted for unsigned uploads"), /mal configurado/);
+  assert.match(uploadError("Upload preset not found"), /mal configurado/);
+  assert.match(uploadError("Resolution too high. Got 30000000 pixels. Maximum is 25 Mpixels"), /25 megapíxeles/);
+  assert.match(uploadError("Algo raro"), /Detalle: Algo raro/);
 });
