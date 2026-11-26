@@ -117,3 +117,8 @@ test("BLK-01: errores de Cloudinary que antes salían genéricos", () => {
   assert.match(uploadError("Resolution too high. Got 30000000 pixels. Maximum is 25 Mpixels"), /25 megapíxeles/);
   assert.match(uploadError("Algo raro"), /Detalle: Algo raro/);
 });
+
+test("BLK-01: el aviso de formato dice qué formato detectó Cloudinary", () => {
+  assert.match(uploadError("Image file format avif not allowed"), /por dentro el archivo es AVIF/);
+  assert.match(uploadError("Invalid image file"), /Detalle: Invalid image file/);
+});
