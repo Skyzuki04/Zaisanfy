@@ -176,11 +176,11 @@ export default function PostForm() {
         <div className="media span2">
           <h2>Imágenes *</h2>
           <p className="muted">
-            De 1 a {MAX_POST_IMAGES} imágenes (JPG, PNG o WebP de hasta 10 MB). La primera es la portada.
+            De 1 a {MAX_POST_IMAGES} imágenes (JPG, PNG, WebP o HEIC de hasta 10 MB). La primera es la portada.
           </p>
           <label className="button">
             + Agregar imágenes
-            <input type="file" accept="image/*" multiple onChange={onFiles} hidden data-testid="post-images" />
+            <input type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.jpg,.jpeg,.png,.webp,.heic,.heif" multiple onChange={onFiles} hidden data-testid="post-images" />
           </label>
           {err("images")}
           {uploadErrors.map((m) => (

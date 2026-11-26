@@ -125,7 +125,7 @@ export default function MiPerfil() {
           {avatar ? <img src={avatar} alt="Tu foto" className="avatar" /> : <div className="avatar empty">Sin foto</div>}
           <label className="button">
             {uploading ? "Subiendo…" : avatar ? "Cambiar foto" : "Subir foto"}
-            <input type="file" accept="image/*" onChange={onAvatar} hidden data-testid="avatar" />
+            <input type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.jpg,.jpeg,.png,.webp,.heic,.heif" onChange={onAvatar} hidden data-testid="avatar" />
           </label>
           {avatar && (
             <button type="button" className="small danger" onClick={() => setAvatar(null)}>
