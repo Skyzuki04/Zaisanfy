@@ -7,7 +7,7 @@ export const SignUpRole = z.enum(["visitante", "vendedor", "creativo"]);
 export type SignUpRole = z.infer<typeof SignUpRole>;
 
 export const ProfileSchema = z.object({
-  id: z.string().uuid(),
+  id: z.guid(),
   role: UserRole,
   full_name: z.string().min(2).max(120).nullable(),
   created_at: z.string(),

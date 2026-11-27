@@ -37,13 +37,13 @@ export const PropertyDataSchema = z.object({
   bathrooms: z.number().min(0, "Los baños no pueden ser negativos").default(0),
   areaM2: z.number().positive("Los metros cuadrados deben ser mayores a 0").optional(),
   location: LocationSchema,
-  media: MediaSchema.default({}),
+  media: MediaSchema.default({ coverUrl: null, gallery: [], panorama360Url: null }),
 });
 export type PropertyData = z.infer<typeof PropertyDataSchema>;
 
 export const PropertySchema = z.object({
-  id: z.string().uuid(),
-  seller_id: z.string().uuid(),
+  id: z.guid(),
+  seller_id: z.guid(),
   status: PropertyStatus,
   data: PropertyDataSchema,
   created_at: z.string(),

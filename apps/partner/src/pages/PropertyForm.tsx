@@ -29,6 +29,9 @@ export default function PropertyForm() {
   const isNew = !id;
   const navigate = useNavigate();
   const { session } = useAuth();
+  // Se usa el id (texto) y no el objeto session: Supabase crea un objeto nuevo cada vez que vuelves a la pestaña
+  // y eso recargaba la propiedad, borrando las fotos y cambios que aún no se guardaban
+  const userId = session!.user.id;
   const [property, setProperty] = useState<Property | null>(null);
   const [initial, setInitial] = useState<PropertyData | null>(isNew ? EMPTY : null);
   const [errors, setErrors] = useState<Errors>({});
@@ -42,7 +45,7 @@ export default function PropertyForm() {
       .from("properties")
       .select(PROPERTY_SELECT)
       .eq("id", id)
-      .eq("seller_id", session!.user.id)
+      .eq("seller_id", userId)
       .maybeSingle()
       .then(({ data }) => {
         if (!data) return setSaveError("No encontramos esta propiedad o no es tuya.");
@@ -51,7 +54,7 @@ export default function PropertyForm() {
         setInitial(p.data);
         setMedia(p.data.media);
       });
-  }, [id, isNew, session]);
+  }, [id, isNew, userId]);
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
