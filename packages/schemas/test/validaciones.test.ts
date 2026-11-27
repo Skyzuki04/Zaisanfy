@@ -122,3 +122,12 @@ test("BLK-01: el aviso de formato dice qué formato detectó Cloudinary", () => 
   assert.match(uploadError("Image file format avif not allowed"), /por dentro el archivo es AVIF/);
   assert.match(uploadError("Invalid image file"), /Detalle: Invalid image file/);
 });
+
+test("Zod 4: mensajes en español y valores por defecto iguales que antes", () => {
+  const r = PropertyDataSchema.parse(ok);
+  assert.deepEqual(r.media, { coverUrl: null, gallery: [], panorama360Url: null });
+  assert.equal(r.currency, "MXN");
+  assert.equal(first(PropertyDataSchema.safeParse({ ...ok, price: undefined })), "Este dato es obligatorio.");
+  assert.equal(first(PropertyDataSchema.safeParse({ ...ok, operation: "permuta" })), "Elige una opción de la lista.");
+  assert.equal(first(PropertyDataSchema.safeParse({ ...ok, media: { gallery: ["no-es-liga"] } })), "Escribe una liga completa (https://…).");
+});

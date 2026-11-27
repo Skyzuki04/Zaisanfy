@@ -24,9 +24,9 @@ const optionalText = (max: number, msg: string) =>
 export const ContactRequestInputSchema = z
   .object({
     kind: ContactKind,
-    property_id: z.string().uuid().nullable().default(null),
-    creative_id: z.string().uuid().nullable().default(null),
-    post_id: z.string().uuid().nullable().default(null),
+    property_id: z.guid().nullable().default(null),
+    creative_id: z.guid().nullable().default(null),
+    post_id: z.guid().nullable().default(null),
     operation: z.preprocess((v) => (v === "" ? null : v), z.enum(["venta", "renta"]).nullable().default(null)),
     phone: z.preprocess(
       (v) => (typeof v === "string" && v.trim() === "" ? null : typeof v === "string" ? v.trim() : v),
@@ -41,12 +41,12 @@ export const ContactRequestInputSchema = z
 export type ContactRequestInput = z.infer<typeof ContactRequestInputSchema>;
 
 export const ContactRequestSchema = z.object({
-  id: z.string().uuid(),
+  id: z.guid(),
   kind: ContactKind,
-  property_id: z.string().uuid().nullable(),
-  creative_id: z.string().uuid().nullable(),
-  post_id: z.string().uuid().nullable(),
-  requester_id: z.string().uuid(),
+  property_id: z.guid().nullable(),
+  creative_id: z.guid().nullable(),
+  post_id: z.guid().nullable(),
+  requester_id: z.guid(),
   phone: z.string().nullable(),
   operation: z.enum(["venta", "renta"]).nullable(),
   preferred_times: z.string().nullable(),

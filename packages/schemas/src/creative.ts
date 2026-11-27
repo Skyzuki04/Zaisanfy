@@ -26,7 +26,7 @@ export const CreativeProfileInputSchema = z.object({
 export type CreativeProfileInput = z.infer<typeof CreativeProfileInputSchema>;
 
 export const CreativeProfileSchema = CreativeProfileInputSchema.extend({
-  id: z.string().uuid(),
+  id: z.guid(),
   created_at: z.string(),
   updated_at: z.string(),
 });
@@ -57,8 +57,8 @@ export const CreativePostInputSchema = z.object({
 export type CreativePostInput = z.infer<typeof CreativePostInputSchema>;
 
 export const CreativePostSchema = CreativePostInputSchema.extend({
-  id: z.string().uuid(),
-  creative_id: z.string().uuid(),
+  id: z.guid(),
+  creative_id: z.guid(),
   created_at: z.string(),
   updated_at: z.string(),
 });
