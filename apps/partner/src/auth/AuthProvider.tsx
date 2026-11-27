@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { authError, type SignIn, type SignUp, type UserRole } from "@zaisanfy/schemas";
 import { supabase } from "../lib/supabase";
@@ -43,14 +43,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const tokenRef = useRef<string | null>(null);
 
   useEffect(() => {
     adoptHandoff().then(() => supabase.auth.getSession()).then(async ({ data }) => {
+      tokenRef.current = data.session?.access_token ?? null;
       setSession(data.session);
       setProfile(data.session ? await loadProfile(data.session.user.id) : null);
       setLoading(false);
     });
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, newSession) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, newSession) => {
+      // Al volver a la pestaña Supabase repite SIGNED_IN con el mismo token: no se cambia nada para no recargar pantallas
+      const prev = tokenRef.current;
+      tokenRef.current = newSession?.access_token ?? null;
+      if (prev && prev === tokenRef.current && event !== "USER_UPDATED") return;
       setSession(newSession);
       setTimeout(async () => setProfile(newSession ? await loadProfile(newSession.user.id) : null), 0);
     });
