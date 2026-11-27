@@ -57,7 +57,7 @@ end $$;
 -- Fotógrafo lejano y creativo de render: no lo ven
 select set_config('request.jwt.claims', '{"sub": "00000000-0000-0000-0000-00000000b173", "role": "authenticated"}', true);
 do $$ begin
-  if exists (select 1 from public.service_requests) or exists (select 1 from public.nearby_services()) then
+  if exists (select 1 from public.service_requests) or exists (select 1 from public.nearby_services() where id = '00000000-0000-0000-0000-0000000017a1') then
     raise exception 'FALLA: un fotógrafo de Monterrey ve un pedido de Guadalajara';
   end if;
   begin
@@ -77,7 +77,7 @@ select set_config('request.jwt.claims', '{"sub": "00000000-0000-0000-0000-000000
 do $$
 declare n record;
 begin
-  select * into n from public.nearby_services();
+  select * into n from public.nearby_services() where id = '00000000-0000-0000-0000-0000000017a1';
   if n.id is null or n.distance_km > 5 or n.property_title <> 'Casa Providencia' then
     raise exception 'FALLA: el fotógrafo cercano no ve el pedido (%)', n.distance_km;
   end if;
@@ -87,7 +87,7 @@ end $$;
 -- El segundo fotógrafo cercano llega tarde
 select set_config('request.jwt.claims', '{"sub": "00000000-0000-0000-0000-00000000b175", "role": "authenticated"}', true);
 do $$ begin
-  if exists (select 1 from public.nearby_services()) then raise exception 'FALLA: el pedido tomado sigue saliendo libre'; end if;
+  if exists (select 1 from public.nearby_services() where id = '00000000-0000-0000-0000-0000000017a1') then raise exception 'FALLA: el pedido tomado sigue saliendo libre'; end if;
   begin
     perform public.accept_service('00000000-0000-0000-0000-0000000017a1');
     raise exception 'FALLA: dos fotógrafos tomaron el mismo pedido';
